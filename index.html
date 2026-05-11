@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Downtime Analytics</title>
+    <title>Downtime Analytics Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -41,7 +41,8 @@
         label { font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; display: block; }
         input, select, textarea { padding: 0.9rem; border: 1.5px solid var(--border); border-radius: 14px; font-size: 0.95rem; width: 100%; outline: none; background: #fcfdfe; }
         
-        .btn-submit { background: var(--primary); color: white; border: none; padding: 1.2rem; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 1rem; }
+        .btn-submit { background: var(--primary); color: white; border: none; padding: 1.2rem; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 1rem; transition: 0.2s; }
+        .btn-submit:hover { background: #4a47d1; }
         .btn-reset { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border); padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 700; }
         .btn-export { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 700; }
 
@@ -63,7 +64,7 @@
     <div id="screen-auth">
         <div class="auth-card">
             <h2 style="text-align:center; margin-bottom:2rem;">Sign in to Downtime <span style="color:var(--primary)">Pro</span></h2>
-            <div style="margin-bottom:1.2rem"><label>Username</label><input type="text" id="login-user" placeholder=""></div>
+            <div style="margin-bottom:1.2rem"><label>Username</label><input type="text" id="login-user"></div>
             <div style="margin-bottom:1.8rem"><label>Password</label><input type="password" id="login-pass"></div>
             <button class="btn-submit" onclick="handleLogin()">LOGIN</button>
             <p style="text-align: center; margin-top: 2rem; color: #94a3b8; font-size: 0.75rem;">Develop by Thirawat Th.</p>
@@ -111,7 +112,7 @@
                 <div class="card card-full"><div class="card-title">Total Loss Time by Line (Minutes)</div><div style="height:300px;"><canvas id="lineLossChart"></canvas></div></div>
                 <div class="card"><div class="card-title">Daily Trend</div><div style="height:300px;"><canvas id="trendChart"></canvas></div></div>
                 <div class="card"><div class="card-title">Dept. Responsibility</div><div style="height:300px;"><canvas id="reasonChart"></canvas></div></div>
-                <div class="card card-full"><div class="card-title">Top 10 Machine Loss (Sorted by Line)</div><div style="height:350px;"><canvas id="machineChart"></canvas></div></div>
+                <div class="card card-full"><div class="card-title">Top 10 Machine Loss</div><div style="height:350px;"><canvas id="machineChart"></canvas></div></div>
             </div>
         </div>
 
@@ -187,6 +188,7 @@
             "AOI": ["Auto AOI Inspection 3 A", "Auto AOI Inspection 3 B", "Auto AOI Inspection 3 C", "Auto AOI Inspection 3 D", "Auto AOI Inspection 3 E", "Auto AOI Inspection 3 F", "Kohyoung 1", "Kohyoung 2", "Kohyoung 3"]
         };
 
+        // --- GLOBAL FUNCTIONS ---
         window.handleLogin = () => {
             const u = document.getElementById('login-user').value.trim();
             const p = document.getElementById('login-pass').value.trim();
@@ -196,7 +198,7 @@
                 document.getElementById('screen-app').style.display='block';
                 document.getElementById('user-display').textContent = `USER: ${currentUser}`;
                 loadData();
-            } else { alert("Invalid Credentials (เช็คตัวพิมพ์เล็ก-ใหญ่ให้ถูกต้อง)"); }
+            } else { alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง"); }
         };
 
         window.doSignOut = () => location.reload();
@@ -204,7 +206,7 @@
         window.updateMachineOptions = () => {
             const line = document.getElementById('line').value;
             const machineSelect = document.getElementById('machine');
-            machineSelect.innerHTML = '<option value="">-- Select --</option>';
+            machineSelect.innerHTML = '<option value="">-- Select Machine --</option>';
             if (line && machineData[line]) {
                 machineSelect.disabled = false;
                 machineData[line].forEach(m => {
@@ -235,16 +237,28 @@
             runFilter();
         };
 
+        // --- FIXED: SUBMIT & RESET ---
         window.submitEvent = async () => {
             const rDate = document.getElementById('record_date').value;
-            const allOwners = [document.getElementById('owner1').value, document.getElementById('owner2').value, document.getElementById('owner3').value].filter(x => x).join(", ");
-            if(!rDate || !document.getElementById('line').value || !allOwners) return alert("Please fill Line, Machine and at least 1 Owner");
+            const line = document.getElementById('line').value;
+            const machine = document.getElementById('machine').value;
+            const startTime = document.getElementById('start_time_only').value;
+            const endTime = document.getElementById('end_time_only').value;
+            const allOwners = [
+                document.getElementById('owner1').value, 
+                document.getElementById('owner2').value, 
+                document.getElementById('owner3').value
+            ].filter(x => x).join(", ");
+
+            if(!rDate || !line || !machine || !allOwners || !startTime || !endTime) {
+                return alert("กรุณากรอกข้อมูลให้ครบถ้วน (Line, Machine, Time และ Owner อย่างน้อย 1 คน)");
+            }
 
             const data = {
-                line: document.getElementById('line').value,
-                machine: document.getElementById('machine').value,
-                start_time: `${rDate}T${document.getElementById('start_time_only').value}`,
-                end_time: `${rDate}T${document.getElementById('end_time_only').value}`,
+                line: line,
+                machine: machine,
+                start_time: `${rDate}T${startTime}`,
+                end_time: `${rDate}T${endTime}`,
                 manual_min: parseInt(document.getElementById('manual_min').value) || 0,
                 reason: document.getElementById('reason').value,
                 problem: document.getElementById('problem').value,
@@ -253,25 +267,37 @@
                 tech_name: allOwners,
                 createdAt: serverTimestamp()
             };
+
             try {
                 await addDoc(collection(db, 'events'), data);
-                alert("Saved!");
-                ['problem','root_cause','action','owner1','owner2','owner3'].forEach(id=>document.getElementById(id).value="");
-            } catch (e) { alert(e.message); }
+                alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
+                
+                // RESET FORM
+                document.getElementById('line').value = "";
+                document.getElementById('machine').innerHTML = '<option>-- Select Line First --</option>';
+                document.getElementById('machine').disabled = true;
+                document.getElementById('reason').value = "";
+                
+                const idsToClear = ['start_time_only','end_time_only','manual_min','owner1','owner2','owner3','problem','root_cause','action'];
+                idsToClear.forEach(id => document.getElementById(id).value = "");
+                
+            } catch (e) { 
+                console.error(e);
+                alert("บันทึกไม่สำเร็จ: " + e.message); 
+            }
         };
 
         window.confirmDelete = async (id) => { 
-            if(currentUser !== "Admin") {
-                return alert("Access Denied: สิทธิ์ของคุณ (" + currentUser + ") ไม่สามารถลบข้อมูลได้ เฉพาะ Admin เท่านั้น");
-            }
-            if(confirm("ยืนยันการลบข้อมูลรายการนี้?")) {
+            if(currentUser !== "Admin") return alert("สิทธิ์ของคุณไม่สามารถลบข้อมูลได้");
+            if(confirm("ยืนยันการลบข้อมูล?")) {
                 try {
                     await deleteDoc(doc(db, "events", id));
-                    alert("ลบข้อมูลสำเร็จ");
-                } catch (e) { alert("ลบข้อมูลไม่สำเร็จ: " + e.message); }
+                    alert("ลบข้อมูลแล้ว");
+                } catch (e) { alert(e.message); }
             }
         };
 
+        // --- DATA ENGINE ---
         function loadData() { 
             onSnapshot(query(collection(db, 'events'), orderBy('createdAt', 'desc')), s => { 
                 rawData = s.docs.map(d => ({id: d.id, ...d.data()})); 
@@ -280,11 +306,14 @@
         }
 
         window.runFilter = () => {
-            const page = document.querySelector('.page-content.active').id;
-            const fS = document.getElementById(page==='page-dashboard'?'db-start':'f-start').value;
-            const fE = document.getElementById(page==='page-dashboard'?'db-end':'f-end').value;
-            const fL = document.getElementById(page==='page-dashboard'?'db-line':'f-line').value;
-            const fM = page==='page-history' ? document.getElementById('f-machine').value.toLowerCase() : "";
+            const activePage = document.querySelector('.page-content.active');
+            if(!activePage) return;
+            const pageId = activePage.id;
+
+            const fS = document.getElementById(pageId==='page-dashboard'?'db-start':'f-start').value;
+            const fE = document.getElementById(pageId==='page-dashboard'?'db-end':'f-end').value;
+            const fL = document.getElementById(pageId==='page-dashboard'?'db-line':'f-line').value;
+            const fM = pageId==='page-history' ? document.getElementById('f-machine').value.toLowerCase() : "";
 
             const filtered = rawData.filter(d => {
                 const dt = d.start_time?.split('T')[0];
@@ -310,7 +339,6 @@
                 trendMap[day] = (trendMap[day]||0) + min;
 
                 if (tbody) {
-                    const delBtnColor = currentUser === "Admin" ? "red" : "#ccc";
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${day}</td><td>${d.start_time?.split('T')[1]}</td>
@@ -318,9 +346,8 @@
                         <td><small>${d.problem}</small></td><td><small>${d.root_cause}</small></td><td><small>${d.action}</small></td>
                         <td style="color:var(--danger); font-weight:800">${min}</td>
                         <td>${d.reason}</td><td><small>${d.tech_name}</small></td>
-                        <td><button class="del-btn" style="color:${delBtnColor}; cursor:pointer; background:none; border:none; font-weight:bold;">ลบ</button></td>
+                        <td><button onclick="confirmDelete('${d.id}')" style="color:${currentUser==='Admin'?'red':'#ccc'}; cursor:pointer; background:none; border:none; font-weight:bold;">ลบ</button></td>
                     `;
-                    row.querySelector('.del-btn').addEventListener('click', () => window.confirmDelete(d.id));
                     tbody.appendChild(row);
                 }
             });
@@ -334,40 +361,31 @@
         }
 
         function renderCharts(trend, reason, machine, line) {
-            // กราฟ Line Loss
+            const chartOptions = { maintainAspectRatio: false, plugins: { legend: { labels: { font: { family: 'Sarabun' } } } } };
+            
             if(charts.l) charts.l.destroy();
             charts.l = new Chart(document.getElementById('lineLossChart'), {
-                type: 'bar', data: { labels: Object.keys(line), datasets: [{ label: 'Min', data: Object.values(line), backgroundColor: '#5c59e8' }] },
-                options: { maintainAspectRatio: false, indexAxis: 'y' }
+                type: 'bar', data: { labels: Object.keys(line), datasets: [{ label: 'Minutes', data: Object.values(line), backgroundColor: '#5c59e8' }] },
+                options: { ...chartOptions, indexAxis: 'y' }
             });
 
-            // กราฟ Daily Trend
             if(charts.t) charts.t.destroy();
-            charts.t = new Chart(document.getElementById('trendChart'), { type:'line', data:{ labels:Object.keys(trend).reverse(), datasets:[{label:'Min', data:Object.values(trend).reverse(), borderColor:'#5c59e8', fill:true, tension:0.4}] }, options:{maintainAspectRatio:false}});
+            charts.t = new Chart(document.getElementById('trendChart'), { 
+                type:'line', data:{ labels:Object.keys(trend).reverse(), datasets:[{label:'Minutes', data:Object.values(trend).reverse(), borderColor:'#5c59e8', fill:true, tension:0.4, backgroundColor:'rgba(92, 89, 232, 0.1)'}] }, 
+                options: chartOptions
+            });
 
-            // กราฟ Reason
             if(charts.r) charts.r.destroy();
-            charts.r = new Chart(document.getElementById('reasonChart'), { type:'doughnut', data:{ labels:Object.keys(reason), datasets:[{data:Object.values(reason), backgroundColor:['#5c59e8', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']}] }, options:{maintainAspectRatio:false}});
+            charts.r = new Chart(document.getElementById('reasonChart'), { 
+                type:'doughnut', data:{ labels:Object.keys(reason), datasets:[{data:Object.values(reason), backgroundColor:['#5c59e8', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']}] }, 
+                options: chartOptions
+            });
 
-            // กราฟ Top 10 Machine (แก้ไขเป็นสีเดียวกันทั้งหมด)
             if(charts.m) charts.m.destroy();
             const topM = Object.entries(machine).sort((a,b)=>b[1]-a[1]).slice(0,10);
             charts.m = new Chart(document.getElementById('machineChart'), { 
-                type:'bar', 
-                data:{ 
-                    labels:topM.map(x=>x[0]), 
-                    datasets:[{
-                        label:'Total Min', 
-                        data:topM.map(x=>x[1]), 
-                        backgroundColor: '#5c59e8', // แก้ไขตรงนี้เป็นสีเดียว
-                        borderRadius: 5
-                    }] 
-                }, 
-                options:{
-                    maintainAspectRatio:false,
-                    plugins: { legend: {display: false} },
-                    scales: { x: { ticks: { font: { size: 10 } } } }
-                }
+                type:'bar', data:{ labels:topM.map(x=>x[0]), datasets:[{label:'Total Min', data:topM.map(x=>x[1]), backgroundColor: '#5c59e8', borderRadius: 5}] }, 
+                options:{ ...chartOptions, scales: { x: { ticks: { font: { size: 9 } } } } }
             });
         }
 
