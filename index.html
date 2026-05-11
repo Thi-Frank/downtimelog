@@ -41,7 +41,7 @@
         .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 1.2rem; }
         label { font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; display: block; }
         input, select, textarea { padding: 0.9rem; border: 1.5px solid var(--border); border-radius: 14px; font-size: 0.95rem; width: 100%; outline: none; background: #fcfdfe; }
-        input[readonly] { background: #f1f5f9; cursor: not-allowed; color: var(--primary); font-weight: 700; }
+        input[readonly], select:disabled { background: #f1f5f9; cursor: not-allowed; }
 
         .btn-submit { background: var(--primary); color: white; border: none; padding: 1.2rem; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 1rem; }
         .btn-reset { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border); padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 700; }
@@ -56,16 +56,7 @@
         
         .page-content { display: none; }
         .page-content.active { display: block; animation: slideUp 0.3s ease-out; }
-        
-        /* Footer Style */
-        .footer {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-sub);
-            font-size: 0.85rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
+        .footer { text-align: center; padding: 2rem; color: var(--text-sub); font-size: 0.85rem; font-weight: 600; }
 
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -78,7 +69,6 @@
             <div style="margin-bottom:1.2rem"><label>Email</label><input type="email" id="login-email"></div>
             <div style="margin-bottom:1.8rem"><label>Password</label><input type="password" id="login-pass"></div>
             <button class="btn-submit" onclick="handleLogin()">LOGIN</button>
-            <!-- Credit on Login Screen -->
             <p style="text-align: center; margin-top: 2rem; color: #94a3b8; font-size: 0.75rem;">Develop by Thirawat Th.</p>
         </div>
     </div>
@@ -98,8 +88,21 @@
             <button class="tab-btn" onclick="switchPage('history', this)">History Logs</button>
         </div>
 
-        <!-- Dashboard Page -->
         <div id="page-dashboard" class="page-content active">
+            <div class="filter-bar">
+                <div><label>Date Start</label><input type="date" id="db-start" onchange="runFilter()"></div>
+                <div><label>Date End</label><input type="date" id="db-end" onchange="runFilter()"></div>
+                <div>
+                    <label>Line</label>
+                    <select id="db-line" onchange="runFilter()">
+                        <option value="">All Lines</option>
+                        <option value="D7B">D7B</option><option value="D9A">D9A</option><option value="D11">D11</option>
+                        <option value="D12">D12</option><option value="D14">D14</option><option value="AOI">AOI</option>
+                    </select>
+                </div>
+                <button class="btn-reset" onclick="resetDashboardFilters()">Reset Filter</button>
+            </div>
+
             <div class="stats-grid">
                 <div class="stat-box"><div class="stat-label">Total Minutes</div><div class="stat-value" id="sum-minutes" style="color:var(--danger)">0</div></div>
                 <div class="stat-box"><div class="stat-label">Frequency</div><div class="stat-value" id="sum-events" style="color:var(--primary)">0</div></div>
@@ -108,37 +111,63 @@
             </div>
 
             <div class="charts-grid">
-                <div class="card card-full">
-                    <div class="card-title">Total Loss Time by Production Line (Minutes)</div>
-                    <div style="height:300px;"><canvas id="lineLossChart"></canvas></div>
-                </div>
+                <div class="card card-full"><div class="card-title">Total Loss Time by Production Line (Minutes)</div><div style="height:300px;"><canvas id="lineLossChart"></canvas></div></div>
                 <div class="card"><div class="card-title">Daily Downtime Trend</div><div style="height:300px;"><canvas id="trendChart"></canvas></div></div>
-                <div class="card"><div class="card-title">Loss Category</div><div style="height:300px;"><canvas id="reasonChart"></canvas></div></div>
+                <div class="card"><div class="card-title">Department Owner Loss</div><div style="height:300px;"><canvas id="reasonChart"></canvas></div></div>
                 <div class="card card-full"><div class="card-title">Machine Loss Ranking</div><div style="height:300px;"><canvas id="machineChart"></canvas></div></div>
             </div>
         </div>
 
-        <!-- Record Page -->
         <div id="page-record" class="page-content">
             <div class="card">
                 <h3 style="margin-bottom:2rem; border-bottom: 2px solid var(--primary-light); padding-bottom: 10px;">Create Downtime Entry</h3>
+                
                 <div class="form-row">
                     <div><label>Date</label><input type="date" id="record_date"></div>
                     <div><label>Start Time</label><input type="time" id="start_time_only" onchange="autoCalcTime()"></div>
                     <div><label>End Time</label><input type="time" id="end_time_only" onchange="autoCalcTime()"></div>
                     <div><label>Calculated Min</label><input type="number" id="manual_min" readonly value="0"></div>
                 </div>
+
                 <div class="form-row">
-                    <div><label>Production Line</label><input type="text" id="line" placeholder="Ex: Line A"></div>
-                    <div><label>Machine Name</label><input type="text" id="machine"></div>
-                    <div><label>Reported By</label><input type="text" id="tech_name"></div>
+                    <div>
+                        <label>Production Line</label>
+                        <select id="line" onchange="updateMachineOptions()">
+                            <option value="">-- Select Line --</option>
+                            <option value="D7B">D7B</option><option value="D9A">D9A</option><option value="D11">D11</option>
+                            <option value="D12">D12</option><option value="D14">D14</option><option value="AOI">AOI</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Machine Name</label>
+                        <select id="machine" disabled><option value="">-- Select Line First --</option></select>
+                    </div>
+                    <div>
+                        <label>Department</label>
+                        <select id="reason">
+                            <option value="">-- Select Department --</option>
+                            <option>IE</option><option>QC/QA</option><option>Production</option>
+                            <option>SMT</option><option>B/I</option><option>TE</option>
+                            <option>AE</option><option>ME</option><option>Other</option>
+                        </select>
+                    </div>
                 </div>
+
                 <div class="form-row">
-                    <div><label>Category</label><select id="reason">
-                        <option>Mechanical</option><option>Electrical</option><option>Software</option>
-                        <option>Setup/Changeover</option><option>Material</option>
-                    </select></div>
+                    <div>
+                        <label>Owner 1</label>
+                        <input type="text" id="owner1" placeholder="Owner 1">
+                    </div>
+                    <div>
+                        <label>Owner 2</label>
+                        <input type="text" id="owner2" placeholder="Owner 2">
+                    </div>
+                    <div>
+                        <label>Owner 3</label>
+                        <input type="text" id="owner3" placeholder="Owner3">
+                    </div>
                 </div>
+
                 <div class="form-row">
                     <div><label>Problem Detail</label><textarea id="problem" rows="3"></textarea></div>
                     <div><label>Root Cause</label><textarea id="root_cause" rows="3"></textarea></div>
@@ -148,13 +177,19 @@
             </div>
         </div>
 
-        <!-- History Page -->
         <div id="page-history" class="page-content">
             <div class="filter-bar">
                 <div><label>Date Start</label><input type="date" id="f-start" onchange="runFilter()"></div>
                 <div><label>Date End</label><input type="date" id="f-end" onchange="runFilter()"></div>
-                <div><label>Line</label><input type="text" id="f-line" placeholder="Ex: Line A" onkeyup="runFilter()"></div>
-                <div><label>Machine</label><input type="text" id="f-machine" placeholder="Machine Name" onkeyup="runFilter()"></div>
+                <div>
+                    <label>Line</label>
+                    <select id="f-line" onchange="runFilter()">
+                        <option value="">All Lines</option>
+                        <option value="D7B">D7B</option><option value="D9A">D9A</option><option value="D11">D11</option>
+                        <option value="D12">D12</option><option value="D14">D14</option><option value="AOI">AOI</option>
+                    </select>
+                </div>
+                <div><label>Machine</label><input type="text" id="f-machine" placeholder="Search Machine..." onkeyup="runFilter()"></div>
                 <button class="btn-reset" onclick="resetFilters()">Reset Filter</button>
                 <button class="btn-export" onclick="exportToExcel()">Export Excel</button>
             </div>
@@ -162,8 +197,8 @@
                 <table id="main-table">
                     <thead>
                         <tr>
-                            <th>Date</th><th>Start - End (AM/PM)</th><th>Line</th><th>Machine</th>
-                            <th>Problem</th><th>Cause</th><th>Action</th><th>Min</th><th>By</th><th>Manage</th>
+                            <th>Date</th><th>Start - End</th><th>Line</th><th>Machine</th>
+                            <th>Problem</th><th>Cause</th><th>Action</th><th>Min</th><th>Dept</th><th>Owner</th><th>Manage</th>
                         </tr>
                     </thead>
                     <tbody id="history-body"></tbody>
@@ -171,10 +206,7 @@
             </div>
         </div>
 
-        <!-- Global Footer -->
-        <footer class="footer">
-            Develop by Thirawat Th.
-        </footer>
+        <footer class="footer">Develop by Thirawat Th.</footer>
     </div>
 
     <script type="module">
@@ -195,8 +227,33 @@
         const db = getFirestore(app);
         let charts = {}, rawData = [];
 
-        document.getElementById('record_date').valueAsDate = new Date();
+        const machineData = {
+            "D7B": ["Auto Magazine Loader", "Auto Flip", "Auto PWB Loader", "Auto Glue 1", "Auto Bottom Core Assembly", "Auto Buffer 1", "Auto Close + Flip + Open Carrier", "Auto Glue 2", "Auto Glue 3", "Auto Top Core Assembly", "Auto Buffer 2", "Auto Close + Flip Carrier", "Auto Inductance 1", "Auto Buffer 3", "Auto Reflow", "Auto Inductance 2", "Auto PWB Unloader", "Auto Loader T1", "Auto Calibration M1", "Auto Calibration M2", "Auto Calibration M3", "Auto Calibration M4", "Auto Buffer T1", "ATS1 M1", "ATS1 M2", "Auto Carrier Unloader T1", "Auto Magazine Unloader T1", "Auto Magazine Loader T2", "Auto Carrier Loader T2", "ATS2 M1", "ATS2 M2", "Auto Buffer T2", "Auto Parallel M1", "Auto Parallel M2", "Auto Carrier Unloader T2", "Auto AOI", "Auto AOI (Packing)"],
+            "D9A": ["Auto Magazine Loader", "Auto Glue (ANDA)", "Auto Transfer before Reflow", "Reflow", "Auto Buffer", "Auto Flip (Front)", "Auto Flip (Behind)", "Auto Router (Front)", "Auto Router (Behind)", "Auto Cleaning + Inkjet + AOI (Front)", "Auto Cleaning (Behind)", "Auto Inkjet (Behind)", "Auto AOI (Behind)", "Auto Transfer before ATS1", "Auto Lift", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "Auto Transfer after ATS1", "Auto Magazine Unloader ATS1", "Auto Magazine Loader ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "Auto Transfer after ATS2", "Auto Magazine Unloader ATS2 (Front)", "Auto Co-plan", "Auto Magazine Unloader ATS2 (Behind)"],
+            "D11": ["Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2", "Auto Co-plan"],
+            "D12": ["Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 m2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2"],
+            "D14": ["Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2", "Auto AOI Inspection 3 F"],
+            "AOI": ["Auto AOI Inspection 3 A", "Auto AOI Inspection 3 B", "Auto AOI Inspection 3 C", "Auto AOI Inspection 3 D", "Auto AOI Inspection 3 E", "Auto AOI Inspection 3 F", "Kohyoung 1", "Kohyoung 2", "Kohyoung 3"]
+        };
 
+        window.updateMachineOptions = () => {
+            const line = document.getElementById('line').value;
+            const machineSelect = document.getElementById('machine');
+            machineSelect.innerHTML = '<option value="">-- Select Machine --</option>';
+            if (line && machineData[line]) {
+                machineSelect.disabled = false;
+                machineData[line].forEach(m => {
+                    let opt = document.createElement('option');
+                    opt.value = m; opt.textContent = m;
+                    machineSelect.appendChild(opt);
+                });
+            } else {
+                machineSelect.disabled = true;
+                machineSelect.innerHTML = '<option value="">-- Select Line First --</option>';
+            }
+        };
+
+        document.getElementById('record_date').valueAsDate = new Date();
         window.handleLogin = () => signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pass').value).catch(e => alert(e.message));
         window.doSignOut = () => signOut(auth);
 
@@ -217,7 +274,7 @@
             document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active')); 
             document.getElementById(`page-${p}`).classList.add('active'); 
             b.classList.add('active'); 
-            window.scrollTo(0,0);
+            runFilter();
         };
 
         window.autoCalcTime = () => {
@@ -245,33 +302,43 @@
             const rDate = document.getElementById('record_date').value;
             const sT = document.getElementById('start_time_only').value;
             const eT = document.getElementById('end_time_only').value;
-            const cM = document.getElementById('manual_min').value;
+            const line = document.getElementById('line').value;
+            const machine = document.getElementById('machine').value;
+            
+            // Collect text inputs for owners
+            const o1 = document.getElementById('owner1').value.trim();
+            const o2 = document.getElementById('owner2').value.trim();
+            const o3 = document.getElementById('owner3').value.trim();
+            const allOwners = [o1, o2, o3].filter(x => x !== "").join(", ");
 
-            if(!rDate || !sT || !eT) return alert("Please fill Date/Time");
+            if(!rDate || !sT || !eT || !line || !machine || allOwners === "") {
+                return alert("กรุณากรอกข้อมูลให้ครบ (Line, Machine, Time และอย่างน้อย 1 Owner)");
+            }
 
             const data = {
-                line: document.getElementById('line').value,
-                machine: document.getElementById('machine').value,
-                start_time: `${rDate}T${sT}`,
-                end_time: `${rDate}T${eT}`,
-                manual_min: parseInt(cM) || 0,
+                line: line, machine: machine,
+                start_time: `${rDate}T${sT}`, end_time: `${rDate}T${eT}`,
+                manual_min: parseInt(document.getElementById('manual_min').value) || 0,
                 reason: document.getElementById('reason').value,
                 problem: document.getElementById('problem').value,
                 root_cause: document.getElementById('root_cause').value,
                 action: document.getElementById('action').value,
-                tech_name: document.getElementById('tech_name').value,
+                tech_name: allOwners,
                 createdAt: serverTimestamp()
             };
 
             try {
                 await addDoc(collection(db, 'events'), data);
-                alert("Saved!");
-                ['line','machine','problem','root_cause','action','tech_name','start_time_only','end_time_only'].forEach(id=>document.getElementById(id).value="");
+                alert("บันทึกสำเร็จ!");
+                ['problem','root_cause','action','owner1','owner2','owner3','start_time_only','end_time_only'].forEach(id=>document.getElementById(id).value="");
+                document.getElementById('line').value = "";
+                document.getElementById('reason').value = "";
+                updateMachineOptions();
                 document.getElementById('manual_min').value=0;
             } catch (e) { alert(e.message); }
         };
 
-        window.confirmDelete = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, "events", id)); };
+        window.confirmDelete = async (id) => { if(confirm("ต้องการลบข้อมูลนี้ใช่หรือไม่?")) await deleteDoc(doc(db, "events", id)); };
 
         function loadData() { 
             onSnapshot(query(collection(db, 'events'), orderBy('createdAt', 'desc')), s => { 
@@ -281,16 +348,24 @@
         }
 
         window.runFilter = () => {
-            const fS = document.getElementById('f-start').value;
-            const fE = document.getElementById('f-end').value;
-            const fL = document.getElementById('f-line').value.toLowerCase();
-            const fM = document.getElementById('f-machine').value.toLowerCase();
+            const activePage = document.querySelector('.page-content.active').id;
+            let fS, fE, fL, fM = "";
+
+            if(activePage === 'page-dashboard') {
+                fS = document.getElementById('db-start').value;
+                fE = document.getElementById('db-end').value;
+                fL = document.getElementById('db-line').value;
+            } else {
+                fS = document.getElementById('f-start').value;
+                fE = document.getElementById('f-end').value;
+                fL = document.getElementById('f-line').value;
+                fM = document.getElementById('f-machine').value.toLowerCase();
+            }
             
             const filtered = rawData.filter(d => {
                 const dt = d.start_time ? d.start_time.split('T')[0] : "";
-                const matchesLine = !fL || (d.line && d.line.toLowerCase().includes(fL));
+                const matchesLine = !fL || d.line === fL;
                 const matchesMachine = !fM || (d.machine && d.machine.toLowerCase().includes(fM));
-                
                 return (!fS || dt >= fS) && (!fE || dt <= fE) && matchesLine && matchesMachine;
             });
             updateUI(filtered);
@@ -301,41 +376,46 @@
             runFilter();
         };
 
+        window.resetDashboardFilters = () => {
+            ['db-start', 'db-end', 'db-line'].forEach(id => document.getElementById(id).value = "");
+            runFilter();
+        }
+
         function updateUI(data) {
             let totalMin = 0, validCount = 0;
             const reasonMap = {}, machineMap = {}, trendMap = {}, lineMap = {};
             const tbody = document.getElementById('history-body'); 
-            tbody.innerHTML = "";
+            if(tbody) tbody.innerHTML = "";
 
             data.forEach(d => {
                 if(!d.start_time || !d.end_time) return;
-                
                 validCount++;
                 const min = d.manual_min || 0;
                 totalMin += min;
-                
-                reasonMap[d.reason] = (reasonMap[d.reason]||0) + 1;
+                reasonMap[d.reason] = (reasonMap[d.reason]||0) + min;
                 machineMap[d.machine] = (machineMap[d.machine]||0) + min;
                 lineMap[d.line] = (lineMap[d.line]||0) + min;
                 const day = d.start_time.split('T')[0];
                 trendMap[day] = (trendMap[day]||0) + min;
 
-                tbody.innerHTML += `<tr>
-                    <td>${day}</td>
-                    <td>${formatAMPM(d.start_time.split('T')[1])} - ${formatAMPM(d.end_time.split('T')[1])}</td>
-                    <td><b>${d.line || '-'}</b></td><td>${d.machine || '-'}</td>
-                    <td><small>${d.problem || '-'}</small></td><td><small>${d.root_cause || '-'}</small></td>
-                    <td><small>${d.action || '-'}</small></td>
-                    <td style="color:var(--danger); font-weight:800">${min}</td>
-                    <td>${d.tech_name || '-'}</td>
-                    <td><button onclick="confirmDelete('${d.id}')" style="color:red; cursor:pointer; background:none; border:none; font-weight:bold;">Delete</button></td>
-                </tr>`;
+                if (tbody) {
+                    tbody.innerHTML += `<tr>
+                        <td>${day}</td>
+                        <td>${formatAMPM(d.start_time.split('T')[1])} - ${formatAMPM(d.end_time.split('T')[1])}</td>
+                        <td><b>${d.line || '-'}</b></td><td>${d.machine || '-'}</td>
+                        <td><small>${d.problem || '-'}</small></td><td><small>${d.root_cause || '-'}</small></td>
+                        <td><small>${d.action || '-'}</small></td>
+                        <td style="color:var(--danger); font-weight:800">${min}</td>
+                        <td><span style="padding:4px 8px; background:var(--primary-light); border-radius:8px; font-size:11px; font-weight:bold; color:var(--primary)">${d.reason || '-'}</span></td>
+                        <td><small>${d.tech_name || '-'}</small></td>
+                        <td><button onclick="confirmDelete('${d.id}')" style="color:red; cursor:pointer; background:none; border:none; font-weight:bold;">ลบ</button></td>
+                    </tr>`;
+                }
             });
 
             document.getElementById('sum-minutes').textContent = totalMin.toLocaleString();
             document.getElementById('sum-events').textContent = validCount;
             document.getElementById('stat-mttr').textContent = validCount ? (totalMin/validCount).toFixed(1) : 0;
-            
             const worstL = Object.entries(lineMap).sort((a,b)=>b[1]-a[1])[0];
             document.getElementById('worst-line').textContent = worstL ? `${worstL[0]} (${worstL[1]}m)` : "-";
             renderCharts(trendMap, reasonMap, machineMap, lineMap);
@@ -344,15 +424,19 @@
         function renderCharts(trend, reason, machine, line) {
             if(charts.l) charts.l.destroy();
             charts.l = new Chart(document.getElementById('lineLossChart'), {
-                type: 'bar', data: { labels: Object.keys(line), datasets: [{ label: 'Min', data: Object.values(line), backgroundColor: '#8b5cf6' }] },
+                type: 'bar', data: { labels: Object.keys(line), datasets: [{ label: 'Total Min', data: Object.values(line), backgroundColor: '#8b5cf6' }] },
                 options: { maintainAspectRatio: false, indexAxis: 'y' }
             });
             if(charts.t) charts.t.destroy();
-            charts.t = new Chart(document.getElementById('trendChart'), { type:'line', data:{ labels:Object.keys(trend).reverse(), datasets:[{label:'Min', data:Object.values(trend).reverse(), borderColor:'#5c59e8', fill:true}] }, options:{maintainAspectRatio:false}});
+            charts.t = new Chart(document.getElementById('trendChart'), { type:'line', data:{ labels:Object.keys(trend).reverse(), datasets:[{label:'Total Min', data:Object.values(trend).reverse(), borderColor:'#5c59e8', fill:true}] }, options:{maintainAspectRatio:false}});
             if(charts.r) charts.r.destroy();
-            charts.r = new Chart(document.getElementById('reasonChart'), { type:'doughnut', data:{ labels:Object.keys(reason), datasets:[{data:Object.values(reason), backgroundColor:['#5c59e8', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']}] }, options:{maintainAspectRatio:false}});
+            charts.r = new Chart(document.getElementById('reasonChart'), { type:'doughnut', data:{ labels:Object.keys(reason), datasets:[{data:Object.values(reason), backgroundColor:['#5c59e8', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#EC4899', '#06B6D4', '#8B5CF6', '#64748B']}] }, options:{maintainAspectRatio:false}});
             if(charts.m) charts.m.destroy();
-            charts.m = new Chart(document.getElementById('machineChart'), { type:'bar', data:{ labels:Object.keys(machine), datasets:[{label:'Min', data:Object.values(machine), backgroundColor:'#5c59e8'}] }, options:{maintainAspectRatio:false}});
+            const topMachines = Object.entries(machine).sort((a,b)=>b[1]-a[1]).slice(0,10);
+            charts.m = new Chart(document.getElementById('machineChart'), { 
+                type:'bar', data:{ labels:topMachines.map(x=>x[0]), datasets:[{label:'Total Min', data:topMachines.map(x=>x[1]), backgroundColor:'#5c59e8'}] }, 
+                options:{maintainAspectRatio:false}
+            });
         }
 
         window.exportToExcel = () => XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("main-table")), "Downtime_Report.xlsx");
