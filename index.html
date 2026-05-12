@@ -48,7 +48,8 @@
 
         .filter-bar { background: white; padding: 1.5rem; border-radius: 24px; margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; border: 1px solid var(--border); align-items: end; }
         .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1400px; }
+        /* Adjusted width for extra time column */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1500px; }
         th { text-align: left; padding: 1.2rem; font-size: 0.75rem; color: var(--text-sub); background: #f8fafc; border-bottom: 2px solid var(--border); font-weight: 800; }
         td { padding: 1.2rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; vertical-align: top; }
         
@@ -77,7 +78,7 @@
                 <h1>Downtime <span style="color:var(--primary)">Dashboard</span></h1>
                 <p id="user-display" style="font-size: 0.8rem; color: var(--primary); font-weight: 800;"></p>
             </div>
-            <button onclick="doSignOut()" style="background:#f1f5f9; border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight:700;">Sign Out</button>
+            <button onclick="doSignOut()" style="background:#a7f89b; border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight:700;">Sign Out</button>
         </div>
 
         <div class="tab-menu">
@@ -105,7 +106,7 @@
                 <div class="stat-box"><div class="stat-label">Total Minutes</div><div class="stat-value" id="sum-minutes" style="color:var(--danger)">0</div></div>
                 <div class="stat-box"><div class="stat-label">Frequency</div><div class="stat-value" id="sum-events" style="color:var(--primary)">0</div></div>
                 <div class="stat-box"><div class="stat-label">MTTR (Avg Repair)</div><div class="stat-value" id="stat-mttr" style="color:var(--warning)">0</div></div>
-                <div class="stat-box"><div class="stat-label">Critical Line</div><div class="stat-value" id="worst-line" style="color:var(--purple); font-size:1.1rem;">-</div></div>
+                <div class="stat-box"><div class="stat-label">Critical Line</div><div class="stat-value" id="worst-line" style="color:var(--danger); font-size:1.5rem;">-</div></div>
             </div>
 
             <div class="charts-grid">
@@ -155,7 +156,22 @@
             </div>
             <div class="card table-container">
                 <table id="main-table">
-                    <thead><tr><th>Date</th><th>Time</th><th>Line</th><th>Machine</th><th>Problem</th><th>Cause</th><th>Action</th><th>Min</th><th>Dept</th><th>Owner</th><th>Manage</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Line</th>
+                            <th>Machine</th>
+                            <th>Problem</th>
+                            <th>Cause</th>
+                            <th>Action</th>
+                            <th>Min.</th>
+                            <th>Dept.</th>
+                            <th>Owner</th>
+                            <th>Manage</th>
+                        </tr>
+                    </thead>
                     <tbody id="history-body"></tbody>
                 </table>
             </div>
@@ -180,12 +196,12 @@
         let charts = {}, rawData = [], currentUser = null;
 
         const machineData = {
-            "D7B": ["All", "Auto Magazine Loader", "Auto Flip", "Auto PWB Loader", "Auto Glue 1", "Auto Bottom Core Assembly", "Auto Buffer 1", "Auto Close + Flip + Open Carrier", "Auto Glue 2", "Auto Glue 3", "Auto Top Core Assembly", "Auto Buffer 2", "Auto Close + Flip Carrier", "Auto Inductance 1", "Auto Buffer 3", "Auto Reflow", "Auto Inductance 2", "Auto PWB Unloader", "Auto Loader T1", "Auto Calibration M1", "Auto Calibration M2", "Auto Calibration M3", "Auto Calibration M4", "Auto Buffer T1", "ATS1 M1", "ATS1 M2", "Auto Carrier Unloader T1", "Auto Magazine Unloader T1", "Auto Magazine Loader T2", "Auto Carrier Loader T2", "ATS2 M1", "ATS2 M2", "Auto Buffer T2", "Auto Parallel M1", "Auto Parallel M2", "Auto Carrier Unloader T2", "Auto AOI", "Auto AOI (Packing)"],
-            "D9A": ["All", "Auto Magazine Loader", "Auto Glue (ANDA)", "Auto Transfer before Reflow", "Reflow", "Auto Buffer", "Auto Flip (Front)", "Auto Flip (Behind)", "Auto Router (Front)", "Auto Router (Behind)", "Auto Cleaning + Inkjet + AOI (Front)", "Auto Cleaning (Behind)", "Auto Inkjet (Behind)", "Auto AOI (Behind)", "Auto Transfer before ATS1", "Auto Lift", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "Auto Transfer after ATS1", "Auto Magazine Unloader ATS1", "Auto Magazine Loader ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "Auto Transfer after ATS2", "Auto Magazine Unloader ATS2 (Front)", "Auto Co-plan", "Auto Magazine Unloader ATS2 (Behind)"],
-            "D11": ["All", "Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2", "Auto Co-plan"],
-            "D12": ["All", "Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 m2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2"],
-            "D14": ["All", "Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2", "Auto AOI Inspection 3 F"],
-            "AOI": ["All", "Auto AOI Inspection 3 A", "Auto AOI Inspection 3 B", "Auto AOI Inspection 3 C", "Auto AOI Inspection 3 D", "Auto AOI Inspection 3 E", "Auto AOI Inspection 3 F", "Kohyoung 1", "Kohyoung 2", "Kohyoung 3"]
+            "D7B": ["Auto Magazine Loader", "Auto Flip", "Auto PWB Loader", "Auto Glue 1", "Auto Bottom Core Assembly", "Auto Buffer 1", "Auto Close + Flip + Open Carrier", "Auto Glue 2", "Auto Glue 3", "Auto Top Core Assembly", "Auto Buffer 2", "Auto Close + Flip Carrier", "Auto Inductance 1", "Auto Buffer 3", "Auto Reflow", "Auto Inductance 2", "Auto PWB Unloader", "Auto Loader T1", "Auto Calibration M1", "Auto Calibration M2", "Auto Calibration M3", "Auto Calibration M4", "Auto Buffer T1", "ATS1 M1", "ATS1 M2", "Auto Carrier Unloader T1", "Auto Magazine Unloader T1", "Auto Magazine Loader T2", "Auto Carrier Loader T2", "ATS2 M1", "ATS2 M2", "Auto Buffer T2", "Auto Parallel M1", "Auto Parallel M2", "Auto Carrier Unloader T2", "Auto AOI", "Auto AOI (Packing)"],
+            "D9A": ["Auto Magazine Loader", "Auto Glue (ANDA)", "Auto Transfer before Reflow", "Reflow", "Auto Buffer", "Auto Flip (Front)", "Auto Flip (Behind)", "Auto Router (Front)", "Auto Router (Behind)", "Auto Cleaning + Inkjet + AOI (Front)", "Auto Cleaning (Behind)", "Auto Inkjet (Behind)", "Auto AOI (Behind)", "Auto Transfer before ATS1", "Auto Lift", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "Auto Transfer after ATS1", "Auto Magazine Unloader ATS1", "Auto Magazine Loader ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "Auto Transfer after ATS2", "Auto Magazine Unloader ATS2 (Front)", "Auto Co-plan", "Auto Magazine Unloader ATS2 (Behind)"],
+            "D11": ["Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2", "Auto Co-plan"],
+            "D12": ["Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 m2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2"],
+            "D14": ["Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2", "Auto AOI Inspection 3 F"],
+            "AOI": ["Auto AOI Inspection 3 A", "Auto AOI Inspection 3 B", "Auto AOI Inspection 3 C", "Auto AOI Inspection 3 D", "Auto AOI Inspection 3 E", "Auto AOI Inspection 3 F", "Kohyoung 1", "Kohyoung 2", "Kohyoung 3"]
         };
 
         // --- GLOBAL FUNCTIONS ---
@@ -237,7 +253,7 @@
             runFilter();
         };
 
-        // --- FIXED: SUBMIT & RESET ---
+        // --- SUBMIT & RESET ---
         window.submitEvent = async () => {
             const rDate = document.getElementById('record_date').value;
             const line = document.getElementById('line').value;
@@ -270,7 +286,7 @@
 
             try {
                 await addDoc(collection(db, 'events'), data);
-                alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
+                alert("บันทึกข้อมูลเรียบร้อยแล้ว");
                 
                 // RESET FORM
                 document.getElementById('line').value = "";
@@ -289,7 +305,7 @@
 
         window.confirmDelete = async (id) => { 
             if(currentUser !== "Admin") return alert("สิทธิ์ของคุณไม่สามารถลบข้อมูลได้");
-            if(confirm("ยืนยันการลบข้อมูล?")) {
+            if(confirm("ยืนยันการลบข้อมูล ? ")) {
                 try {
                     await deleteDoc(doc(db, "events", id));
                     alert("ลบข้อมูลแล้ว");
@@ -340,8 +356,14 @@
 
                 if (tbody) {
                     const row = document.createElement('tr');
+                    // MODIFIED: Parsing Start and End Time from data
+                    const startTime = d.start_time ? d.start_time.split('T')[1] : "-";
+                    const endTime = d.end_time ? d.end_time.split('T')[1] : "-";
+
                     row.innerHTML = `
-                        <td>${day}</td><td>${d.start_time?.split('T')[1]}</td>
+                        <td>${day}</td>
+                        <td style="color:var(--primary); font-weight:600">${startTime}</td>
+                        <td style="color:var(--purple); font-weight:600">${endTime}</td>
                         <td><b>${d.line}</b></td><td>${d.machine}</td>
                         <td><small>${d.problem}</small></td><td><small>${d.root_cause}</small></td><td><small>${d.action}</small></td>
                         <td style="color:var(--danger); font-weight:800">${min}</td>
