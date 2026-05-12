@@ -48,15 +48,17 @@
 
         .filter-bar { background: white; padding: 1.5rem; border-radius: 24px; margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; border: 1px solid var(--border); align-items: end; }
         .table-container { overflow-x: auto; }
-        /* Adjusted width for extra time column */
         table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1500px; }
         th { text-align: left; padding: 1.2rem; font-size: 0.75rem; color: var(--text-sub); background: #f8fafc; border-bottom: 2px solid var(--border); font-weight: 800; }
         td { padding: 1.2rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; vertical-align: top; }
         
         .page-content { display: none; }
         .page-content.active { display: block; animation: slideUp 0.3s ease-out; }
-        .footer { text-align: center; padding: 2rem; color: var(--text-sub); font-size: 0.85rem; font-weight: 600; }
 
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
+        .modal-content { background: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 800px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+
+        .footer { text-align: center; padding: 2rem; color: var(--text-sub); font-size: 0.85rem; font-weight: 600; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -78,7 +80,7 @@
                 <h1>Downtime <span style="color:var(--primary)">Dashboard</span></h1>
                 <p id="user-display" style="font-size: 0.8rem; color: var(--primary); font-weight: 800;"></p>
             </div>
-            <button onclick="doSignOut()" style="background:#a7f89b; border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight:700;">Sign Out</button>
+            <button onclick="doSignOut()" style="background:#9af49c; border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight:700;">Sign Out</button>
         </div>
 
         <div class="tab-menu">
@@ -166,8 +168,8 @@
                             <th>Problem</th>
                             <th>Cause</th>
                             <th>Action</th>
-                            <th>Min.</th>
-                            <th>Dept.</th>
+                            <th>Min</th>
+                            <th>Dept</th>
                             <th>Owner</th>
                             <th>Manage</th>
                         </tr>
@@ -176,12 +178,35 @@
                 </table>
             </div>
         </div>
+
+        <div id="editModal" class="modal">
+            <div class="modal-content card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h3>Edit Downtime Record</h3>
+                    <button onclick="closeEditModal()" style="background:none; border:none; font-size:2rem; cursor:pointer;">&times;</button>
+                </div>
+                <input type="hidden" id="edit_id">
+                <div class="form-row">
+                    <div><label>Date</label><input type="date" id="edit_date"></div>
+                    <div><label>Start Time</label><input type="time" id="edit_start" onchange="autoCalcEditTime()"></div>
+                    <div><label>End Time</label><input type="time" id="edit_end" onchange="autoCalcEditTime()"></div>
+                    <div><label>Minutes</label><input type="number" id="edit_min" readonly></div>
+                </div>
+                <div class="form-row">
+                    <div><label>Problem</label><textarea id="edit_problem" rows="2"></textarea></div>
+                    <div><label>Root Cause</label><textarea id="edit_root" rows="2"></textarea></div>
+                    <div><label>Action</label><textarea id="edit_action" rows="2"></textarea></div>
+                </div>
+                <button class="btn-submit" onclick="saveEdit()">UPDATE DATA</button>
+            </div>
+        </div>
+
         <footer class="footer">Develop by Thirawat Th.</footer>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyB5Y953TTOoguUdUJItUgnJVb6X0zas9eM", 
@@ -204,7 +229,6 @@
             "AOI": ["Auto AOI Inspection 3 A", "Auto AOI Inspection 3 B", "Auto AOI Inspection 3 C", "Auto AOI Inspection 3 D", "Auto AOI Inspection 3 E", "Auto AOI Inspection 3 F", "Kohyoung 1", "Kohyoung 2", "Kohyoung 3"]
         };
 
-        // --- GLOBAL FUNCTIONS ---
         window.handleLogin = () => {
             const u = document.getElementById('login-user').value.trim();
             const p = document.getElementById('login-pass').value.trim();
@@ -218,6 +242,59 @@
         };
 
         window.doSignOut = () => location.reload();
+        window.switchPage = (p, b) => { 
+            document.querySelectorAll('.page-content').forEach(x => x.classList.remove('active')); 
+            document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active')); 
+            document.getElementById(`page-${p}`).classList.add('active'); 
+            if(b) b.classList.add('active'); 
+            runFilter();
+        };
+
+        window.openEdit = (id) => {
+            const entry = rawData.find(d => d.id === id);
+            if(!entry) return;
+            document.getElementById('edit_id').value = id;
+            document.getElementById('edit_date').value = entry.start_time.split('T')[0];
+            document.getElementById('edit_start').value = entry.start_time.split('T')[1];
+            document.getElementById('edit_end').value = entry.end_time.split('T')[1];
+            document.getElementById('edit_min').value = entry.manual_min;
+            document.getElementById('edit_problem').value = entry.problem || "";
+            document.getElementById('edit_root').value = entry.root_cause || "";
+            document.getElementById('edit_action').value = entry.action || "";
+            document.getElementById('editModal').style.display = 'block';
+        };
+
+        window.closeEditModal = () => document.getElementById('editModal').style.display = 'none';
+
+        window.autoCalcEditTime = () => {
+            const start = document.getElementById('edit_start').value;
+            const end = document.getElementById('edit_end').value;
+            if (start && end) {
+                const s = new Date(`2000-01-01T${start}`);
+                const e = new Date(`2000-01-01T${end}`);
+                let diff = (e - s) / 60000;
+                if (diff < 0) diff += 1440;
+                document.getElementById('edit_min').value = diff;
+            }
+        };
+
+        window.saveEdit = async () => {
+            const id = document.getElementById('edit_id').value;
+            const date = document.getElementById('edit_date').value;
+            const updated = {
+                start_time: `${date}T${document.getElementById('edit_start').value}`,
+                end_time: `${date}T${document.getElementById('edit_end').value}`,
+                manual_min: parseInt(document.getElementById('edit_min').value),
+                problem: document.getElementById('edit_problem').value,
+                root_cause: document.getElementById('edit_root').value,
+                action: document.getElementById('edit_action').value
+            };
+            try {
+                await updateDoc(doc(db, "events", id), updated);
+                alert("แก้ไขข้อมูลสำเร็จ!");
+                closeEditModal();
+            } catch (e) { alert("Error: " + e.message); }
+        };
 
         window.updateMachineOptions = () => {
             const line = document.getElementById('line').value;
@@ -245,34 +322,17 @@
             }
         };
 
-        window.switchPage = (p, b) => { 
-            document.querySelectorAll('.page-content').forEach(x => x.classList.remove('active')); 
-            document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active')); 
-            document.getElementById(`page-${p}`).classList.add('active'); 
-            b.classList.add('active'); 
-            runFilter();
-        };
-
-        // --- SUBMIT & RESET ---
         window.submitEvent = async () => {
             const rDate = document.getElementById('record_date').value;
             const line = document.getElementById('line').value;
             const machine = document.getElementById('machine').value;
             const startTime = document.getElementById('start_time_only').value;
             const endTime = document.getElementById('end_time_only').value;
-            const allOwners = [
-                document.getElementById('owner1').value, 
-                document.getElementById('owner2').value, 
-                document.getElementById('owner3').value
-            ].filter(x => x).join(", ");
-
-            if(!rDate || !line || !machine || !allOwners || !startTime || !endTime) {
-                return alert("กรุณากรอกข้อมูลให้ครบถ้วน (Line, Machine, Time และ Owner อย่างน้อย 1 คน)");
-            }
-
+            const allOwners = [document.getElementById('owner1').value, document.getElementById('owner2').value, document.getElementById('owner3').value].filter(x => x).join(", ");
+            if(!rDate || !line || !machine || !allOwners || !startTime || !endTime) return alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+            
             const data = {
-                line: line,
-                machine: machine,
+                line, machine, tech_name: allOwners,
                 start_time: `${rDate}T${startTime}`,
                 end_time: `${rDate}T${endTime}`,
                 manual_min: parseInt(document.getElementById('manual_min').value) || 0,
@@ -280,32 +340,18 @@
                 problem: document.getElementById('problem').value,
                 root_cause: document.getElementById('root_cause').value,
                 action: document.getElementById('action').value,
-                tech_name: allOwners,
                 createdAt: serverTimestamp()
             };
-
             try {
                 await addDoc(collection(db, 'events'), data);
-                alert("บันทึกข้อมูลเรียบร้อยแล้ว");
-                
-                // RESET FORM
-                document.getElementById('line').value = "";
-                document.getElementById('machine').innerHTML = '<option>-- Select Line First --</option>';
-                document.getElementById('machine').disabled = true;
-                document.getElementById('reason').value = "";
-                
-                const idsToClear = ['start_time_only','end_time_only','manual_min','owner1','owner2','owner3','problem','root_cause','action'];
-                idsToClear.forEach(id => document.getElementById(id).value = "");
-                
-            } catch (e) { 
-                console.error(e);
-                alert("บันทึกไม่สำเร็จ: " + e.message); 
-            }
+                alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
+                location.reload();
+            } catch (e) { alert("Error: " + e.message); }
         };
 
         window.confirmDelete = async (id) => { 
             if(currentUser !== "Admin") return alert("สิทธิ์ของคุณไม่สามารถลบข้อมูลได้");
-            if(confirm("ยืนยันการลบข้อมูล ? ")) {
+            if(confirm("ยืนยันการลบข้อมูล?")) {
                 try {
                     await deleteDoc(doc(db, "events", id));
                     alert("ลบข้อมูลแล้ว");
@@ -313,7 +359,6 @@
             }
         };
 
-        // --- DATA ENGINE ---
         function loadData() { 
             onSnapshot(query(collection(db, 'events'), orderBy('createdAt', 'desc')), s => { 
                 rawData = s.docs.map(d => ({id: d.id, ...d.data()})); 
@@ -325,7 +370,6 @@
             const activePage = document.querySelector('.page-content.active');
             if(!activePage) return;
             const pageId = activePage.id;
-
             const fS = document.getElementById(pageId==='page-dashboard'?'db-start':'f-start').value;
             const fE = document.getElementById(pageId==='page-dashboard'?'db-end':'f-end').value;
             const fL = document.getElementById(pageId==='page-dashboard'?'db-line':'f-line').value;
@@ -336,6 +380,13 @@
                 return (!fS || dt >= fS) && (!fE || dt <= fE) && (!fL || d.line === fL) && (!fM || d.machine?.toLowerCase().includes(fM));
             });
             updateUI(filtered);
+        };
+
+        window.resetDashboardFilters = () => {
+            document.getElementById('db-start').value = "";
+            document.getElementById('db-end').value = "";
+            document.getElementById('db-line').value = "";
+            runFilter();
         };
 
         function updateUI(data) {
@@ -349,26 +400,31 @@
                 totalMin += min;
                 reasonMap[d.reason] = (reasonMap[d.reason]||0) + min;
                 lineMap[d.line] = (lineMap[d.line]||0) + min;
-                const mKey = `${d.line}: ${d.machine}`;
+                
+                const currentLineFilter = document.getElementById('db-line').value;
+                const mKey = currentLineFilter ? d.machine : `${d.line}: ${d.machine}`;
                 machineMap[mKey] = (machineMap[mKey]||0) + min;
+
                 const day = d.start_time?.split('T')[0];
                 trendMap[day] = (trendMap[day]||0) + min;
 
                 if (tbody) {
                     const row = document.createElement('tr');
-                    // MODIFIED: Parsing Start and End Time from data
                     const startTime = d.start_time ? d.start_time.split('T')[1] : "-";
                     const endTime = d.end_time ? d.end_time.split('T')[1] : "-";
-
                     row.innerHTML = `
-                        <td>${day}</td>
-                        <td style="color:var(--primary); font-weight:600">${startTime}</td>
+                        <td>${day}</td><td style="color:var(--primary); font-weight:600">${startTime}</td>
                         <td style="color:var(--purple); font-weight:600">${endTime}</td>
                         <td><b>${d.line}</b></td><td>${d.machine}</td>
                         <td><small>${d.problem}</small></td><td><small>${d.root_cause}</small></td><td><small>${d.action}</small></td>
                         <td style="color:var(--danger); font-weight:800">${min}</td>
                         <td>${d.reason}</td><td><small>${d.tech_name}</small></td>
-                        <td><button onclick="confirmDelete('${d.id}')" style="color:${currentUser==='Admin'?'red':'#ccc'}; cursor:pointer; background:none; border:none; font-weight:bold;">ลบ</button></td>
+                        <td>
+                            <div style="display:flex; gap:8px;">
+                                <button onclick="openEdit('${d.id}')" style="color:var(--primary); cursor:pointer; background:none; border:none; font-weight:bold;">แก้ไข</button>
+                                <button onclick="confirmDelete('${d.id}')" style="color:${currentUser==='Admin'?'red':'#ccc'}; cursor:pointer; background:none; border:none; font-weight:bold;">ลบ</button>
+                            </div>
+                        </td>
                     `;
                     tbody.appendChild(row);
                 }
@@ -382,13 +438,28 @@
             renderCharts(trendMap, reasonMap, machineMap, lineMap);
         }
 
+        // --- UPDATED RENDER CHARTS FUNCTION (NO TILT / ALIGN HORIZONTAL) ---
         function renderCharts(trend, reason, machine, line) {
-            const chartOptions = { maintainAspectRatio: false, plugins: { legend: { labels: { font: { family: 'Sarabun' } } } } };
+            const chartOptions = { 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { labels: { font: { family: 'Sarabun' } } } 
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            maxRotation: 0, 
+                            minRotation: 0,
+                            font: { family: 'Sarabun', size: 11 }
+                        }
+                    }
+                }
+            };
             
             if(charts.l) charts.l.destroy();
             charts.l = new Chart(document.getElementById('lineLossChart'), {
                 type: 'bar', data: { labels: Object.keys(line), datasets: [{ label: 'Minutes', data: Object.values(line), backgroundColor: '#5c59e8' }] },
-                options: { ...chartOptions, indexAxis: 'y' }
+                options: { ...chartOptions, indexAxis: 'y', scales: { y: { ticks: { font: { family: 'Sarabun' } } } } }
             });
 
             if(charts.t) charts.t.destroy();
@@ -400,22 +471,35 @@
             if(charts.r) charts.r.destroy();
             charts.r = new Chart(document.getElementById('reasonChart'), { 
                 type:'doughnut', data:{ labels:Object.keys(reason), datasets:[{data:Object.values(reason), backgroundColor:['#5c59e8', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']}] }, 
-                options: chartOptions
+                options: { maintainAspectRatio: false, plugins: { legend: { labels: { font: { family: 'Sarabun' } } } } }
             });
 
             if(charts.m) charts.m.destroy();
             const topM = Object.entries(machine).sort((a,b)=>b[1]-a[1]).slice(0,10);
             charts.m = new Chart(document.getElementById('machineChart'), { 
-                type:'bar', data:{ labels:topM.map(x=>x[0]), datasets:[{label:'Total Min', data:topM.map(x=>x[1]), backgroundColor: '#5c59e8', borderRadius: 5}] }, 
-                options:{ ...chartOptions, scales: { x: { ticks: { font: { size: 9 } } } } }
+                type:'bar', data:{ labels:topM.map(x=>x[0]), datasets:[{label:'Total Minutes Loss', data:topM.map(x=>x[1]), backgroundColor: '#5c59e8', borderRadius: 5}] }, 
+                options:{ 
+                    ...chartOptions, 
+                    scales: { 
+                        x: { 
+                            ticks: { 
+                                font: { size: 9, family: 'Sarabun' }, 
+                                maxRotation: 0, 
+                                minRotation: 0,
+                                callback: function(value) {
+                                    const label = this.getLabelForValue(value);
+                                    if (label.length > 12) return label.substring(0, 10) + '...';
+                                    return label;
+                                }
+                            } 
+                        } 
+                    } 
+                }
             });
         }
 
         window.exportToExcel = () => XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("main-table")), "Downtime_Report.xlsx");
         window.resetFilters = () => { ['f-start','f-end','f-line','f-machine'].forEach(id=>document.getElementById(id).value=""); runFilter(); };
-        window.resetDashboardFilters = () => { ['db-start','db-end','db-line'].forEach(id=>document.getElementById(id).value=""); runFilter(); };
-        
-        document.getElementById('record_date').valueAsDate = new Date();
     </script>
 </body>
 </html>
