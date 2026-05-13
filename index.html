@@ -115,7 +115,7 @@
             </div>
 
             <div class="charts-grid">
-                <div class="card card-full"><div class="card-title">Total Loss Time by Line (Minutes)</div><div style="height:300px;"><canvas id="lineLossChart"></canvas></div></div>
+                <div class="card card-full"><div class="card-title">Total Loss Time by Line (Minutes)</div><div style="height:400px;"><canvas id="lineLossChart"></canvas></div></div>
                 <div class="card"><div class="card-title">Daily Trend (Minutes)</div><div style="height:300px;"><canvas id="trendChart"></canvas></div></div>
                 <div class="card"><div class="card-title">Dept. Responsibility</div><div style="height:300px;"><canvas id="reasonChart"></canvas></div></div>
                 <div class="card card-full"><div class="card-title">Top 10 Machine Loss</div><div style="height:550px;"><canvas id="machineChart"></canvas></div></div>
@@ -276,31 +276,40 @@
         }
 
         window.runFilter = () => {
-            const activePage = document.querySelector('.page-content.active');
-            if(!activePage) return;
-            const pageId = activePage.id;
+    const activePage = document.querySelector('.page-content.active');
+    if(!activePage) return;
+    const pageId = activePage.id;
 
-            const fS = document.getElementById(pageId==='page-dashboard'?'db-start':'f-start').value;
-            const fE = document.getElementById(pageId==='page-dashboard'?'db-end':'f-end').value;
-            const fL = document.getElementById(pageId==='page-dashboard'?'db-line':'f-line').value;
-            const fTimeS = pageId==='page-history' ? document.getElementById('f-time-start').value : "";
-            const fTimeE = pageId==='page-history' ? document.getElementById('f-time-end').value : "";
-            const fM = pageId==='page-history' ? document.getElementById('f-machine').value.toLowerCase() : "";
+    const fS = document.getElementById(pageId==='page-dashboard'?'db-start':'f-start').value;
+    const fE = document.getElementById(pageId==='page-dashboard'?'db-end':'f-end').value;
+    const fL = document.getElementById(pageId==='page-dashboard'?'db-line':'f-line').value;
+    const fTimeS = pageId==='page-history' ? document.getElementById('f-time-start').value : "";
+    const fTimeE = pageId==='page-history' ? document.getElementById('f-time-end').value : "";
+    const fM = pageId==='page-history' ? document.getElementById('f-machine').value.toLowerCase() : "";
 
-            const filtered = rawData.filter(d => {
-                const dt = d.start_time?.split('T')[0];
-                const tm = d.start_time?.split('T')[1];
-                const matchDate = (!fS || dt >= fS) && (!fE || dt <= fE);
-                const matchLine = (!fL || d.line === fL);
-                const matchMachine = (!fM || d.machine?.toLowerCase().includes(fM));
-                let matchTime = true;
-                if (fTimeS && tm && tm < fTimeS) matchTime = false;
-                if (fTimeE && tm && tm > fTimeE) matchTime = false;
-                return matchDate && matchLine && matchMachine && matchTime;
-            });
-            updateUI(filtered);
-        };
+    const filterStartFull = (fS && fTimeS) ? `${fS}T${fTimeS}` : (fS ? `${fS}T00:00` : null);
+    const filterEndFull = (fE && fTimeE) ? `${fE}T${fTimeE}` : (fE ? `${fE}T23:59` : null);
 
+    const filtered = rawData.filter(d => {
+        const itemFullTime = d.start_time; // ข้อมูลใน DB เป็น "YYYY-MM-DDTHH:mm" อยู่แล้ว
+        const dt = d.start_time?.split('T')[0];
+        
+        const matchLine = (!fL || d.line === fL);
+        const matchMachine = (!fM || d.machine?.toLowerCase().includes(fM));
+
+        let matchDateTime = true;
+        if (filterStartFull && itemFullTime < filterStartFull) matchDateTime = false;
+        if (filterEndFull && itemFullTime > filterEndFull) matchDateTime = false;
+        
+        if (!fTimeS && !fTimeE) {
+            matchDateTime = (!fS || dt >= fS) && (!fE || dt <= fE);
+        }
+
+        return matchLine && matchMachine && matchDateTime;
+    });
+    
+    updateUI(filtered);
+};
         function updateUI(data) {
             let totalMin = 0;
             const reasonMap = {}, machineMap = {}, trendMap = {}, lineMap = {};
