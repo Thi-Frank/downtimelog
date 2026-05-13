@@ -197,6 +197,23 @@
                     <div><label>Root Cause</label><textarea id="edit_root" rows="2"></textarea></div>
                     <div><label>Action</label><textarea id="edit_action" rows="2"></textarea></div>
                 </div>
+                <div class="form-row">
+    <div>
+        <label>Dept (Reason)</label>
+        <select id="edit_reason">
+            <option value="">-- Select --</option>
+            <option>IE</option>
+            <option>QC/QA</option>
+            <option>Production</option>
+            <option>SMT</option>
+            <option>B/I</option>
+            <option>TE</option>
+            <option>AE</option>
+            <option>ME</option>
+            <option>Other</option>
+        </select>
+    </div>
+</div>
                 <button class="btn-submit" onclick="saveEdit()">UPDATE DATA</button>
             </div>
         </div>
@@ -258,6 +275,7 @@
             document.getElementById('edit_start').value = entry.start_time.split('T')[1];
             document.getElementById('edit_end').value = entry.end_time.split('T')[1];
             document.getElementById('edit_min').value = entry.manual_min;
+            document.getElementById('edit_reason').value = entry.reason || "";
             document.getElementById('edit_problem').value = entry.problem || "";
             document.getElementById('edit_root').value = entry.root_cause || "";
             document.getElementById('edit_action').value = entry.action || "";
@@ -285,6 +303,7 @@
                 start_time: `${date}T${document.getElementById('edit_start').value}`,
                 end_time: `${date}T${document.getElementById('edit_end').value}`,
                 manual_min: parseInt(document.getElementById('edit_min').value),
+                reason: document.getElementById('edit_reason').value,
                 problem: document.getElementById('edit_problem').value,
                 root_cause: document.getElementById('edit_root').value,
                 action: document.getElementById('edit_action').value
