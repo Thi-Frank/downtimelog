@@ -89,6 +89,7 @@
             <button class="tab-btn" onclick="switchPage('history', this)">History Logs</button>
         </div>
 
+        <!-- Dashboard Page -->
         <div id="page-dashboard" class="page-content active">
             <div class="filter-bar">
                 <div><label>Date Start</label><input type="date" id="db-start" onchange="runFilter()"></div>
@@ -119,6 +120,7 @@
             </div>
         </div>
 
+        <!-- Record Page -->
         <div id="page-record" class="page-content">
             <div class="card">
                 <h3 style="margin-bottom:1.5rem;">Create Downtime Entry</h3>
@@ -147,10 +149,15 @@
             </div>
         </div>
 
+        <!-- History Page (Updated Filter) -->
         <div id="page-history" class="page-content">
             <div class="filter-bar">
-                <div><label>Start</label><input type="date" id="f-start" onchange="runFilter()"></div>
-                <div><label>End</label><input type="date" id="f-end" onchange="runFilter()"></div>
+                <div><label>Date Start</label><input type="date" id="f-start" onchange="runFilter()"></div>
+                <div><label>Date End</label><input type="date" id="f-end" onchange="runFilter()"></div>
+                <!-- New Time Filters -->
+                <div><label>Time Start</label><input type="time" id="f-t-start" onchange="runFilter()"></div>
+                <div><label>Time End</label><input type="time" id="f-t-end" onchange="runFilter()"></div>
+                
                 <div><label>Line</label><select id="f-line" onchange="runFilter()"><option value="">All</option><option value="D7B">D7B</option><option value="D9A">D9A</option><option value="D11">D11</option><option value="D12">D12</option><option value="D14">D14</option><option value="AOI">AOI</option></select></div>
                 <div><label>Machine</label><input type="text" id="f-machine" placeholder="Search..." onkeyup="runFilter()"></div>
                 <button class="btn-reset" onclick="resetFilters()">Reset</button>
@@ -179,6 +186,7 @@
             </div>
         </div>
 
+        <!-- Edit Modal -->
         <div id="editModal" class="modal">
             <div class="modal-content card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
@@ -198,22 +206,14 @@
                     <div><label>Action</label><textarea id="edit_action" rows="2"></textarea></div>
                 </div>
                 <div class="form-row">
-    <div>
-        <label>Dept (Reason)</label>
-        <select id="edit_reason">
-            <option value="">-- Select --</option>
-            <option>IE</option>
-            <option>QC/QA</option>
-            <option>Production</option>
-            <option>SMT</option>
-            <option>B/I</option>
-            <option>TE</option>
-            <option>AE</option>
-            <option>ME</option>
-            <option>Other</option>
-        </select>
-    </div>
-</div>
+                    <div>
+                        <label>Dept (Reason)</label>
+                        <select id="edit_reason">
+                            <option value="">-- Select --</option>
+                            <option>IE</option><option>QC/QA</option><option>Production</option><option>SMT</option><option>B/I</option><option>TE</option><option>AE</option><option>ME</option><option>Other</option>
+                        </select>
+                    </div>
+                </div>
                 <button class="btn-submit" onclick="saveEdit()">UPDATE DATA</button>
             </div>
         </div>
@@ -238,12 +238,12 @@
         let charts = {}, rawData = [], currentUser = null;
 
         const machineData = {
-            "D7B": ["Auto Magazine Loader", "Auto Flip", "Auto PWB Loader", "Auto Glue 1", "Auto Bottom Core Assembly", "Auto Buffer 1", "Auto Close + Flip + Open Carrier", "Auto Glue 2", "Auto Glue 3", "Auto Top Core Assembly", "Auto Buffer 2", "Auto Close + Flip Carrier", "Auto Inductance 1", "Auto Buffer 3", "Auto Reflow", "Auto Inductance 2", "Auto PWB Unloader", "Auto Loader T1", "Auto Calibration M1", "Auto Calibration M2", "Auto Calibration M3", "Auto Calibration M4", "Auto Buffer T1", "ATS1 M1", "ATS1 M2", "Auto Carrier Unloader T1", "Auto Magazine Unloader T1", "Auto Magazine Loader T2", "Auto Carrier Loader T2", "ATS2 M1", "ATS2 M2", "Auto Buffer T2", "Auto Parallel M1", "Auto Parallel M2", "Auto Carrier Unloader T2", "Auto AOI", "Auto AOI (Packing)"],
-            "D9A": ["Auto Magazine Loader", "Auto Glue (ANDA)", "Auto Transfer before Reflow", "Reflow", "Auto Buffer", "Auto Flip (Front)", "Auto Flip (Behind)", "Auto Router (Front)", "Auto Router (Behind)", "Auto Cleaning + Inkjet + AOI (Front)", "Auto Cleaning (Behind)", "Auto Inkjet (Behind)", "Auto AOI (Behind)", "Auto Transfer before ATS1", "Auto Lift", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "Auto Transfer after ATS1", "Auto Magazine Unloader ATS1", "Auto Magazine Loader ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "Auto Transfer after ATS2", "Auto Magazine Unloader ATS2 (Front)", "Auto Co-plan", "Auto Magazine Unloader ATS2 (Behind)"],
-            "D11": ["Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2", "Auto Co-plan"],
-            "D12": ["Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 m2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2"],
-            "D14": ["Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2", "Auto AOI Inspection 3 F"],
-            "AOI": ["Auto AOI Inspection 3 A", "Auto AOI Inspection 3 B", "Auto AOI Inspection 3 C", "Auto AOI Inspection 3 D", "Auto AOI Inspection 3 E", "Auto AOI Inspection 3 F", "Kohyoung 1", "Kohyoung 2", "Kohyoung 3"]
+            "D7B": ["All","Auto Magazine Loader", "Auto Flip", "Auto PWB Loader", "Auto Glue 1", "Auto Bottom Core Assembly", "Auto Buffer 1", "Auto Close + Flip + Open Carrier", "Auto Glue 2", "Auto Glue 3", "Auto Top Core Assembly", "Auto Buffer 2", "Auto Close + Flip Carrier", "Auto Inductance 1", "Auto Buffer 3", "Auto Reflow", "Auto Inductance 2", "Auto PWB Unloader", "Auto Loader T1", "Auto Calibration M1", "Auto Calibration M2", "Auto Calibration M3", "Auto Calibration M4", "Auto Buffer T1", "ATS1 M1", "ATS1 M2", "Auto Carrier Unloader T1", "Auto Magazine Unloader T1", "Auto Magazine Loader T2", "Auto Carrier Loader T2", "ATS2 M1", "ATS2 M2", "Auto Buffer T2", "Auto Parallel M1", "Auto Parallel M2", "Auto Carrier Unloader T2", "Auto AOI", "Auto AOI (Packing)"],
+            "D9A": ["All","Auto Magazine Loader", "Auto Glue (ANDA)", "Auto Transfer before Reflow", "Reflow", "Auto Buffer", "Auto Flip (Front)", "Auto Flip (Behind)", "Auto Router (Front)", "Auto Router (Behind)", "Auto Cleaning + Inkjet + AOI (Front)", "Auto Cleaning (Behind)", "Auto Inkjet (Behind)", "Auto AOI (Behind)", "Auto Transfer before ATS1", "Auto Lift", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "Auto Transfer after ATS1", "Auto Magazine Unloader ATS1", "Auto Magazine Loader ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "Auto Transfer after ATS2", "Auto Magazine Unloader ATS2 (Front)", "Auto Co-plan", "Auto Magazine Unloader ATS2 (Behind)"],
+            "D11": ["All","Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2", "Auto Co-plan"],
+            "D12": ["All","Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 m2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2"],
+            "D14": ["All","Auto Magazine Loader", "Auto Flip", "Auto Glue", "Auto Reflow", "Auto Buffer", "Auto Router 1", "Auto Router 2", "Auto Cleaning + Inkjet", "Auto AOI inspection 1", "Auto Tray Loader ATS1", "ATS1 M1", "ATS1 M2", "ATS1 M3", "ATS1 M4", "ATS1 M5", "Auto Unloader ATS1", "Auto Loader ATS2", "Auto Scan ATS2", "ATS2 M1", "ATS2 M2", "ATS2 M3", "ATS2 M4", "ATS2 M5", "Auto Unloader ATS2", "Auto AOI Inspection 3 F"],
+            "AOI": ["All","Auto AOI Inspection 3 A", "Auto AOI Inspection 3 B", "Auto AOI Inspection 3 C", "Auto AOI Inspection 3 D", "Auto AOI Inspection 3 E", "Auto AOI Inspection 3 F", "Kohyoung 1", "Kohyoung 2", "Kohyoung 3"]
         };
 
         window.handleLogin = () => {
@@ -259,6 +259,7 @@
         };
 
         window.doSignOut = () => location.reload();
+        
         window.switchPage = (p, b) => { 
             document.querySelectorAll('.page-content').forEach(x => x.classList.remove('active')); 
             document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active')); 
@@ -266,6 +267,54 @@
             if(b) b.classList.add('active'); 
             runFilter();
         };
+
+        window.runFilter = () => {
+            const activePage = document.querySelector('.page-content.active');
+            if(!activePage) return;
+            const pageId = activePage.id;
+
+            // Common Filters
+            const fS = document.getElementById(pageId==='page-dashboard'?'db-start':'f-start').value;
+            const fE = document.getElementById(pageId==='page-dashboard'?'db-end':'f-end').value;
+            const fL = document.getElementById(pageId==='page-dashboard'?'db-line':'f-line').value;
+            
+            // History Specific Filters
+            const fM = pageId==='page-history' ? document.getElementById('f-machine').value.toLowerCase() : "";
+            const fTimeS = pageId==='page-history' ? document.getElementById('f-t-start').value : "";
+            const fTimeE = pageId==='page-history' ? document.getElementById('f-t-end').value : "";
+
+            const filtered = rawData.filter(d => {
+                const dt = d.start_time?.split('T')[0];
+                const tm = d.start_time?.split('T')[1];
+
+                const matchDate = (!fS || dt >= fS) && (!fE || dt <= fE);
+                const matchTime = (!fTimeS || tm >= fTimeS) && (!fTimeE || tm <= fTimeE);
+                const matchLine = (!fL || d.line === fL);
+                const matchMachine = (!fM || d.machine?.toLowerCase().includes(fM));
+
+                return matchDate && matchTime && matchLine && matchMachine;
+            });
+            updateUI(filtered);
+        };
+
+        window.resetFilters = () => {
+            document.getElementById('f-start').value = "";
+            document.getElementById('f-end').value = "";
+            document.getElementById('f-t-start').value = "";
+            document.getElementById('f-t-end').value = "";
+            document.getElementById('f-line').value = "";
+            document.getElementById('f-machine').value = "";
+            runFilter();
+        };
+
+        window.resetDashboardFilters = () => {
+            document.getElementById('db-start').value = "";
+            document.getElementById('db-end').value = "";
+            document.getElementById('db-line').value = "";
+            runFilter();
+        };
+
+        // --- Other logic remain same ---
 
         window.openEdit = (id) => {
             const entry = rawData.find(d => d.id === id);
@@ -303,10 +352,10 @@
                 start_time: `${date}T${document.getElementById('edit_start').value}`,
                 end_time: `${date}T${document.getElementById('edit_end').value}`,
                 manual_min: parseInt(document.getElementById('edit_min').value),
-                reason: document.getElementById('edit_reason').value,
                 problem: document.getElementById('edit_problem').value,
                 root_cause: document.getElementById('edit_root').value,
-                action: document.getElementById('edit_action').value
+                action: document.getElementById('edit_action').value,
+                reason: document.getElementById('edit_reason').value
             };
             try {
                 await updateDoc(doc(db, "events", id), updated);
@@ -385,29 +434,6 @@
             }); 
         }
 
-        window.runFilter = () => {
-            const activePage = document.querySelector('.page-content.active');
-            if(!activePage) return;
-            const pageId = activePage.id;
-            const fS = document.getElementById(pageId==='page-dashboard'?'db-start':'f-start').value;
-            const fE = document.getElementById(pageId==='page-dashboard'?'db-end':'f-end').value;
-            const fL = document.getElementById(pageId==='page-dashboard'?'db-line':'f-line').value;
-            const fM = pageId==='page-history' ? document.getElementById('f-machine').value.toLowerCase() : "";
-
-            const filtered = rawData.filter(d => {
-                const dt = d.start_time?.split('T')[0];
-                return (!fS || dt >= fS) && (!fE || dt <= fE) && (!fL || d.line === fL) && (!fM || d.machine?.toLowerCase().includes(fM));
-            });
-            updateUI(filtered);
-        };
-
-        window.resetDashboardFilters = () => {
-            document.getElementById('db-start').value = "";
-            document.getElementById('db-end').value = "";
-            document.getElementById('db-line').value = "";
-            runFilter();
-        };
-
         function updateUI(data) {
             let totalMin = 0;
             const reasonMap = {}, machineMap = {}, trendMap = {}, lineMap = {};
@@ -420,7 +446,7 @@
                 reasonMap[d.reason] = (reasonMap[d.reason]||0) + min;
                 lineMap[d.line] = (lineMap[d.line]||0) + min;
                 
-                const currentLineFilter = document.getElementById('db-line').value;
+                const currentLineFilter = document.getElementById(document.querySelector('.page-content.active').id === 'page-dashboard' ? 'db-line' : 'f-line').value;
                 const mKey = currentLineFilter ? d.machine : `${d.line}: ${d.machine}`;
                 machineMap[mKey] = (machineMap[mKey]||0) + min;
 
@@ -457,7 +483,6 @@
             renderCharts(trendMap, reasonMap, machineMap, lineMap);
         }
 
-        // --- UPDATED RENDER CHARTS FUNCTION (NO TILT / ALIGN HORIZONTAL) ---
         function renderCharts(trend, reason, machine, line) {
             const chartOptions = { 
                 maintainAspectRatio: false, 
@@ -466,11 +491,7 @@
                 },
                 scales: {
                     x: {
-                        ticks: {
-                            maxRotation: 0, 
-                            minRotation: 0,
-                            font: { family: 'Sarabun', size: 11 }
-                        }
+                        ticks: { maxRotation: 0, minRotation: 0, font: { family: 'Sarabun', size: 11 } }
                     }
                 }
             };
@@ -478,7 +499,7 @@
             if(charts.l) charts.l.destroy();
             charts.l = new Chart(document.getElementById('lineLossChart'), {
                 type: 'bar', data: { labels: Object.keys(line), datasets: [{ label: 'Minutes', data: Object.values(line), backgroundColor: '#5c59e8' }] },
-                options: { ...chartOptions, indexAxis: 'y', scales: { y: { ticks: { font: { family: 'Sarabun' } } } } }
+                options: { ...chartOptions, indexAxis: 'y' }
             });
 
             if(charts.t) charts.t.destroy();
@@ -488,37 +509,27 @@
             });
 
             if(charts.r) charts.r.destroy();
-            charts.r = new Chart(document.getElementById('reasonChart'), { 
-                type:'doughnut', data:{ labels:Object.keys(reason), datasets:[{data:Object.values(reason), backgroundColor:['#5c59e8', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']}] }, 
-                options: { maintainAspectRatio: false, plugins: { legend: { labels: { font: { family: 'Sarabun' } } } } }
+            charts.r = new Chart(document.getElementById('reasonChart'), {
+                type:'doughnut', data:{ labels:Object.keys(reason), datasets:[{data:Object.values(reason), backgroundColor:['#5c59e8','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4']}] },
+                options: { maintainAspectRatio:false }
             });
 
+            const top10 = Object.entries(machine).sort((a,b)=>b[1]-a[1]).slice(0,10);
             if(charts.m) charts.m.destroy();
-            const topM = Object.entries(machine).sort((a,b)=>b[1]-a[1]).slice(0,10);
-            charts.m = new Chart(document.getElementById('machineChart'), { 
-                type:'bar', data:{ labels:topM.map(x=>x[0]), datasets:[{label:'Total Minutes Loss', data:topM.map(x=>x[1]), backgroundColor: '#5c59e8', borderRadius: 5}] }, 
-                options:{ 
-                    ...chartOptions, 
-                    scales: { 
-                        x: { 
-                            ticks: { 
-                                font: { size: 9, family: 'Sarabun' }, 
-                                maxRotation: 0, 
-                                minRotation: 0,
-                                callback: function(value) {
-                                    const label = this.getLabelForValue(value);
-                                    if (label.length > 12) return label.substring(0, 10) + '...';
-                                    return label;
-                                }
-                            } 
-                        } 
-                    } 
-                }
+            charts.m = new Chart(document.getElementById('machineChart'), {
+                type:'bar', data:{ labels:top10.map(x=>x[0]), datasets:[{label:'Minutes', data:top10.map(x=>x[1]), backgroundColor:'#8b5cf6'}] },
+                options: { ...chartOptions, indexAxis: 'y' }
             });
         }
 
-        window.exportToExcel = () => XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("main-table")), "Downtime_Report.xlsx");
-        window.resetFilters = () => { ['f-start','f-end','f-line','f-machine'].forEach(id=>document.getElementById(id).value=""); runFilter(); };
+        window.exportToExcel = () => {
+            const table = document.getElementById("main-table");
+            const ws = XLSX.utils.table_to_sheet(table);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "DowntimeLogs");
+            XLSX.writeFile(wb, "Downtime_History_Export.xlsx");
+        };
+
     </script>
 </body>
 </html>
