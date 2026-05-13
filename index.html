@@ -275,22 +275,22 @@
             }); 
         }
 
-        window.runFilter = () => {
-    const activePage = document.querySelector('.page-content.active');
-    if(!activePage) return;
-    const pageId = activePage.id;
+    window.runFilter = () => {
+        const activePage = document.querySelector('.page-content.active');
+        if(!activePage) return;
+        const pageId = activePage.id;
 
-    const fS = document.getElementById(pageId==='page-dashboard'?'db-start':'f-start').value;
-    const fE = document.getElementById(pageId==='page-dashboard'?'db-end':'f-end').value;
-    const fL = document.getElementById(pageId==='page-dashboard'?'db-line':'f-line').value;
-    const fTimeS = pageId==='page-history' ? document.getElementById('f-time-start').value : "";
-    const fTimeE = pageId==='page-history' ? document.getElementById('f-time-end').value : "";
-    const fM = pageId==='page-history' ? document.getElementById('f-machine').value.toLowerCase() : "";
+        const fS = document.getElementById(pageId==='page-dashboard'?'db-start':'f-start').value;
+        const fE = document.getElementById(pageId==='page-dashboard'?'db-end':'f-end').value;
+        const fL = document.getElementById(pageId==='page-dashboard'?'db-line':'f-line').value;
+        const fTimeS = pageId==='page-history' ? document.getElementById('f-time-start').value : "";
+        const fTimeE = pageId==='page-history' ? document.getElementById('f-time-end').value : "";
+        const fM = pageId==='page-history' ? document.getElementById('f-machine').value.toLowerCase() : "";
 
-    const filterStartFull = (fS && fTimeS) ? `${fS}T${fTimeS}` : (fS ? `${fS}T00:00` : null);
-    const filterEndFull = (fE && fTimeE) ? `${fE}T${fTimeE}` : (fE ? `${fE}T23:59` : null);
+        const filterStartFull = (fS && fTimeS) ? `${fS}T${fTimeS}` : (fS ? `${fS}T00:00` : null);
+        const filterEndFull = (fE && fTimeE) ? `${fE}T${fTimeE}` : (fE ? `${fE}T23:59` : null);
 
-    const filtered = rawData.filter(d => {
+        const filtered = rawData.filter(d => {
         const itemFullTime = d.start_time; // ข้อมูลใน DB เป็น "YYYY-MM-DDTHH:mm" อยู่แล้ว
         const dt = d.start_time?.split('T')[0];
         
@@ -298,11 +298,11 @@
         const matchMachine = (!fM || d.machine?.toLowerCase().includes(fM));
 
         let matchDateTime = true;
-        if (filterStartFull && itemFullTime < filterStartFull) matchDateTime = false;
-        if (filterEndFull && itemFullTime > filterEndFull) matchDateTime = false;
+             if (filterStartFull && itemFullTime < filterStartFull) matchDateTime = false;
+             if (filterEndFull && itemFullTime > filterEndFull) matchDateTime = false;
         
-        if (!fTimeS && !fTimeE) {
-            matchDateTime = (!fS || dt >= fS) && (!fE || dt <= fE);
+             if (!fTimeS && !fTimeE) {
+                matchDateTime = (!fS || dt >= fS) && (!fE || dt <= fE);
         }
 
         return matchLine && matchMachine && matchDateTime;
@@ -322,7 +322,6 @@
                 reasonMap[d.reason] = (reasonMap[d.reason]||0) + min;
                 lineMap[d.line] = (lineMap[d.line]||0) + min;
                 
-                // แก้ไข: แสดงชื่อ Line ในกราฟ Machine
                 const mKey = `[${d.line}] ${d.machine || "Unknown"}`;
                 machineMap[mKey] = (machineMap[mKey]||0) + min;
 
@@ -353,12 +352,9 @@
 
             document.getElementById('sum-minutes').textContent = totalMin.toLocaleString();
             document.getElementById('sum-events').textContent = data.length;
-            document.getElementById('stat-mttr').textContent = data.length ? (totalMin / data.length).toFixed(1) : 0;
-            
-            // แก้ไข: แสดง Critical Line พร้อมนาที
+            document.getElementById('stat-mttr').textContent = data.length ? (totalMin / data.length).toFixed(1) : 0;            
             const lines = Object.entries(lineMap).sort((a,b)=>b[1]-a[1]);
             document.getElementById('worst-line').textContent = lines.length ? `${lines[0][0]} (${lines[0][1]} Min)` : "-";
-
             renderLineLossChart(lineMap);
             renderTrendChart(trendMap);
             renderReasonChart(reasonMap);
@@ -399,7 +395,7 @@
             charts[canvasId] = new Chart(ctx, {
                 type: 'doughnut',
                 data: { labels: Object.keys(reasonMap), datasets: [{ data: Object.values(reasonMap), backgroundColor: ['#5c59e8', '#8b5cf6', '#ef4444', '#f59e0b', '#10b981'] }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+                options: { responsive: true, maintainAspectRatio: false, cutout: '40%' }
             });
         }
 
@@ -410,7 +406,7 @@
             const top10 = Object.entries(machineMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
             charts[canvasId] = new Chart(ctx, {
                 type: 'bar',
-                data: { labels: top10.map(x=>x[0]), datasets: [{ data: top10.map(x=>x[1]), backgroundColor: '#8b5cf6', borderRadius: 6 }] },
+                data: { labels: top10.map(x=>x[0]), datasets: [{ data: top10.map(x=>x[1]), backgroundColor: '#5c59e8', borderRadius: 6 }] },
                 options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
