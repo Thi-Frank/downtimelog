@@ -47,6 +47,8 @@
         .btn-submit:hover { background: #4a47d1; transform: scale(1.01); }
         .btn-reset { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border); padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 700; }
         .btn-export { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 700; }
+        .btn-danger { background: #fee2e2; color: var(--danger); border: 1px solid #fecaca; padding: 9px 14px; border-radius: 12px; cursor: pointer; font-weight: 800; }
+        .btn-small { width: auto; margin-top: 0; padding: 0.9rem 1.2rem; }
 
         .filter-bar { background: white; padding: 1.5rem; border-radius: 24px; margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; border: 1px solid var(--border); align-items: end; }
         .table-container { overflow-x: auto; }
@@ -59,9 +61,17 @@
 
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
         .modal-content { background: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 800px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .settings-grid { display: grid; grid-template-columns: minmax(280px, 0.8fr) minmax(360px, 1.2fr); gap: 1.5rem; align-items: start; }
+        .settings-list { display: grid; gap: 1rem; }
+        .production-item { border: 1px solid var(--border); border-radius: 18px; padding: 1.2rem; background: #fcfdfe; }
+        .production-head { display: flex; justify-content: space-between; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+        .machine-list { display: grid; gap: 8px; }
+        .machine-row { display: flex; justify-content: space-between; gap: 1rem; align-items: center; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem 0.9rem; }
+        .empty-state { color: var(--text-sub); font-size: 0.9rem; padding: 1rem; background: #f8fafc; border: 1px dashed var(--border); border-radius: 14px; }
 
         .footer { text-align: center; padding: 2rem; color: var(--text-sub); font-size: 0.85rem; font-weight: 600; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 900px) { .settings-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -89,6 +99,7 @@
             <button class="tab-btn active" onclick="switchPage('dashboard', this)">Dashboard</button>
             <button class="tab-btn" onclick="switchPage('record', this)">Downtime Record</button>
             <button class="tab-btn" onclick="switchPage('history', this)">History Logs</button>
+            <button class="tab-btn" id="settings-tab" onclick="switchPage('settings', this)" style="display:none;">Settings</button>
         </div>
 
         <!-- Dashboard Page -->
@@ -100,11 +111,10 @@
                     <label>Line</label>
                     <select id="db-line" onchange="runFilter()">
                         <option value="">All Lines</option>
-                        <option value="D7B">D7B</option><option value="D9A">D9A</option><option value="D11">D11</option>
-                        <option value="D12">D12</option><option value="D14">D14</option><option value="AOI">AOI</option>
                     </select>
                 </div>
                 <button class="btn-reset" onclick="resetDashboardFilters()">Reset Filter</button>
+                <button class="btn-export" onclick="prepareDashboardSummaryEmail()">Send Dashboard Email</button>
             </div>
 
             <div class="stats-grid">
@@ -117,7 +127,7 @@
             <div class="charts-grid">
                 <div class="card card-full"><div class="card-title">Total Loss Time by Line (Minutes)</div><div style="height:400px;"><canvas id="lineLossChart"></canvas></div></div>
                 <div class="card"><div class="card-title">Daily Trend (Minutes)</div><div style="height:300px;"><canvas id="trendChart"></canvas></div></div>
-                <div class="card"><div class="card-title">Dept. Responsibility</div><div style="height:300px;"><canvas id="reasonChart"></canvas></div></div>
+                <div class="card"><div class="card-title">Dept. Responsibility by Shift</div><div style="height:300px;"><canvas id="reasonChart"></canvas></div></div>
                 <div class="card card-full"><div class="card-title">Top 10 Machine Loss</div><div style="height:550px;"><canvas id="machineChart"></canvas></div></div>
             </div>
         </div>
@@ -133,7 +143,7 @@
                     <div><label>Minutes</label><input type="number" id="manual_min" readonly value="0"></div>
                 </div>
                 <div class="form-row">
-                    <div><label>Line</label><select id="line" onchange="updateMachineOptions()"><option value="">-- Select Line --</option><option value="D7B">D7B</option><option value="D9A">D9A</option><option value="D11">D11</option><option value="D12">D12</option><option value="D14">D14</option><option value="AOI">AOI</option></select></div>
+                    <div><label>Line</label><select id="line" onchange="updateMachineOptions()"><option value="">-- Select Line --</option></select></div>
                     <div><label>Machine</label><select id="machine" disabled><option>-- Select Line First --</option></select></div>
                     <div><label>Dept</label><select id="reason"><option value="">-- Select --</option><option>IE</option><option>QC/QA</option><option>Production</option><option>SMT</option><option>B/I</option><option>TE</option><option>AE</option><option>ME</option><option>Other</option></select></div>
                 </div>
@@ -158,7 +168,7 @@
                 <div><label>Date End</label><input type="date" id="f-end" onchange="runFilter()"></div>
                 <div><label>Time Start</label><input type="time" id="f-time-start" onchange="runFilter()"></div>
                 <div><label>Time End</label><input type="time" id="f-time-end" onchange="runFilter()"></div>
-                <div><label>Line</label><select id="f-line" onchange="runFilter()"><option value="">All</option><option value="D7B">D7B</option><option value="D9A">D9A</option><option value="D11">D11</option><option value="D12">D12</option><option value="D14">D14</option><option value="AOI">AOI</option></select></div>
+                <div><label>Line</label><select id="f-line" onchange="runFilter()"><option value="">All</option></select></div>
                 <div><label>Machine</label><input type="text" id="f-machine" placeholder="Search..." onkeyup="runFilter()"></div>
                 <button class="btn-reset" onclick="resetFilters()">Reset</button>
                 <button class="btn-export" onclick="exportToExcel()">Export Excel</button>
@@ -183,6 +193,39 @@
                     </thead>
                     <tbody id="history-body"></tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="page-settings" class="page-content">
+            <div class="settings-grid">
+                <div class="card">
+                    <h3 style="margin-bottom:1.5rem;">Production Settings</h3>
+                    <div style="margin-bottom:1rem;">
+                        <label>Production Name</label>
+                        <input type="text" id="new-production-name" placeholder="Example: D15">
+                    </div>
+                    <button class="btn-submit" onclick="addProduction()">ADD PRODUCTION</button>
+                    <div style="border-top:1px solid var(--border); margin:1.5rem 0; padding-top:1.5rem;">
+                        <h3 style="margin-bottom:1.5rem;">Email Summary</h3>
+                        <div style="margin-bottom:1rem;">
+                            <label>Send Time</label>
+                            <input type="time" id="alert-send-time" value="07:30">
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <label>Email Recipients</label>
+                            <textarea id="alert-recipients" rows="5" placeholder="name1@company.com&#10;name2@company.com"></textarea>
+                        </div>
+                        <button class="btn-submit btn-small" onclick="saveAlertSettings()">SAVE EMAIL LIST</button>
+                        <button class="btn-export" style="width:100%; margin-top:0.75rem;" onclick="prepareDashboardSummaryEmail()">SEND DASHBOARD EMAIL</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Production and Machine Names</div>
+                    <div id="settings-list" class="settings-list">
+                        <div class="empty-state">Loading settings from Firebase...</div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -223,7 +266,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc, updateDoc, setDoc, getDocs, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyB5Y953TTOoguUdUJItUgnJVb6X0zas9eM", 
@@ -235,7 +278,7 @@
         
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        let charts = {}, rawData = [], currentUser = null;
+        let charts = {}, rawData = [], currentFilteredData = [], currentUser = null, productionSettings = [], alertSettings = { recipients: ["thithamm@deltaww.com"], sendTime: "07:30" };
 
         const machineData = {
             "D7B": ["Auto Magazine Loader", "Auto Flip", "Auto PWB Loader", "Auto Glue 1", "Auto Bottom Core Assembly", "Auto Buffer 1", "Auto Close + Flip + Open Carrier", "Auto Glue 2", "Auto Glue 3", "Auto Top Core Assembly", "Auto Buffer 2", "Auto Close + Flip Carrier", "Auto Inductance 1", "Auto Buffer 3", "Auto Reflow", "Auto Inductance 2", "Auto PWB Unloader", "Auto Loader T1", "Auto Calibration M1", "Auto Calibration M2", "Auto Calibration M3", "Auto Calibration M4", "Auto Buffer T1", "ATS1 M1", "ATS1 M2", "Auto Carrier Unloader T1", "Auto Magazine Unloader T1", "Auto Magazine Loader T2", "Auto Carrier Loader T2", "ATS2 M1", "ATS2 M2", "Auto Buffer T2", "Auto Parallel M1", "Auto Parallel M2", "Auto Carrier Unloader T2", "Auto AOI", "Auto AOI (Packing)"],
@@ -246,6 +289,214 @@
             "AOI": ["Auto AOI Inspection 3 A", "Auto AOI Inspection 3 B", "Auto AOI Inspection 3 C", "Auto AOI Inspection 3 D", "Auto AOI Inspection 3 E", "Auto AOI Inspection 3 F", "Kohyoung 1", "Kohyoung 2", "Kohyoung 3"]
         };
 
+        const isAdmin = () => currentUser === 'Admin';
+        const settingsCollection = () => collection(db, 'productionSettings');
+        const alertSettingsDoc = () => doc(db, 'alertSettings', 'dailySummary');
+        const activeMachineData = () => {
+            if (!productionSettings.length) return machineData;
+            return productionSettings.reduce((map, item) => {
+                map[item.name] = Array.isArray(item.machines) ? item.machines : [];
+                return map;
+            }, {});
+        };
+        const escapeHtml = (value = "") => String(value).replace(/[&<>"']/g, ch => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        }[ch]));
+
+        function setSelectOptions(selectId, placeholderText, names) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            const currentValue = select.value;
+            select.innerHTML = `<option value="">${placeholderText}</option>`;
+            names.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                select.appendChild(opt);
+            });
+            if (names.includes(currentValue)) select.value = currentValue;
+        }
+
+        function renderProductionOptions() {
+            const names = Object.keys(activeMachineData()).sort((a, b) => a.localeCompare(b));
+            setSelectOptions('db-line', 'All Lines', names);
+            setSelectOptions('f-line', 'All', names);
+            setSelectOptions('line', '-- Select Line --', names);
+            updateMachineOptions();
+        }
+
+        async function seedDefaultSettingsIfNeeded() {
+            const snap = await getDocs(settingsCollection());
+            if (!snap.empty) return;
+            await Promise.all(Object.entries(machineData).map(([name, machines]) => addDoc(settingsCollection(), {
+                name,
+                machines,
+                createdAt: serverTimestamp()
+            })));
+        }
+
+        async function loadSettings() {
+            try {
+                await seedDefaultSettingsIfNeeded();
+                onSnapshot(query(settingsCollection(), orderBy('name')), snap => {
+                    productionSettings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    renderProductionOptions();
+                    renderSettingsPage();
+                    runFilter();
+                });
+            } catch (e) {
+                alert("Settings load error: " + e.message);
+            }
+        }
+
+        function renderSettingsPage() {
+            const list = document.getElementById('settings-list');
+            if (!list) return;
+            if (!isAdmin()) {
+                list.innerHTML = '<div class="empty-state">Admin user only can edit production and machine settings.</div>';
+                return;
+            }
+            if (!productionSettings.length) {
+                list.innerHTML = '<div class="empty-state">No production names found.</div>';
+                return;
+            }
+            list.innerHTML = productionSettings.map(item => {
+                const machineRows = (item.machines || []).map(machine => `
+                    <div class="machine-row">
+                        <span>${escapeHtml(machine)}</span>
+                        <button class="btn-danger" onclick="deleteMachine('${item.id}', '${encodeURIComponent(machine)}')">Delete</button>
+                    </div>
+                `).join('') || '<div class="empty-state">No machine names yet.</div>';
+
+                return `
+                    <div class="production-item">
+                        <div class="production-head">
+                            <h3>${escapeHtml(item.name)}</h3>
+                            <button class="btn-danger" onclick="deleteProduction('${item.id}', '${escapeHtml(item.name)}')">Delete Production</button>
+                        </div>
+                        <div class="form-row" style="grid-template-columns: 1fr auto; align-items:end;">
+                            <div>
+                                <label>Machine Name</label>
+                                <input type="text" id="machine-input-${item.id}" placeholder="Add machine for ${escapeHtml(item.name)}">
+                            </div>
+                            <button class="btn-submit btn-small" onclick="addMachine('${item.id}')">ADD</button>
+                        </div>
+                        <div class="machine-list">${machineRows}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadAlertSettings() {
+            onSnapshot(alertSettingsDoc(), snap => {
+                if (snap.exists()) {
+                    const data = snap.data();
+                    alertSettings = {
+                        recipients: Array.isArray(data.recipients) ? data.recipients : [],
+                        sendTime: data.sendTime || "07:30"
+                    };
+                }
+                renderAlertSettingsPage();
+            });
+        }
+
+        function renderAlertSettingsPage() {
+            const recipientsEl = document.getElementById('alert-recipients');
+            const sendTimeEl = document.getElementById('alert-send-time');
+            if (!recipientsEl || !sendTimeEl) return;
+
+            recipientsEl.value = alertSettings.recipients.join('\n');
+            sendTimeEl.value = alertSettings.sendTime || "07:30";
+            recipientsEl.disabled = !isAdmin();
+            sendTimeEl.disabled = !isAdmin();
+        }
+
+        function getLocalDateValue(date = new Date()) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function sortMapEntries(map) {
+            return Object.entries(map).sort((a, b) => b[1] - a[1]);
+        }
+
+        function getDashboardFilterLabel() {
+            const start = document.getElementById('db-start')?.value || "All";
+            const end = document.getElementById('db-end')?.value || "All";
+            const line = document.getElementById('db-line')?.value || "All Lines";
+            return `Date Start: ${start}, Date End: ${end}, Line: ${line}`;
+        }
+
+        function buildDashboardSummary(data = currentFilteredData, title = "Dashboard Downtime Summary") {
+            const lineMap = {}, machineMap = {}, deptShiftMap = {};
+            let totalMin = 0;
+
+            data.forEach(d => {
+                const min = parseInt(d.manual_min) || 0;
+                const line = d.line || "Unknown";
+                const machine = `[${line}] ${d.machine || "Unknown"}`;
+                const dept = d.reason || "Unknown";
+                const shift = getShiftLabel(d.start_time);
+
+                totalMin += min;
+                lineMap[line] = (lineMap[line] || 0) + min;
+                machineMap[machine] = (machineMap[machine] || 0) + min;
+                if (!deptShiftMap[dept]) deptShiftMap[dept] = { day: 0, night: 0, between: 0 };
+                deptShiftMap[dept][shift] += min;
+            });
+
+            const topLine = sortMapEntries(lineMap)[0];
+            const topMachine = sortMapEntries(machineMap)[0];
+            const lineLines = sortMapEntries(lineMap)
+                .map(([line, min], index) => `${index + 1}. ${line}: ${min} min`);
+            const trendMap = {};
+            data.forEach(d => {
+                const day = d.start_time?.split('T')[0];
+                if (day) trendMap[day] = (trendMap[day] || 0) + (parseInt(d.manual_min) || 0);
+            });
+            const trendLines = Object.entries(trendMap)
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .map(([day, min]) => `- ${day}: ${min} min`);
+            const deptLines = Object.entries(deptShiftMap)
+                .sort((a, b) => (b[1].day + b[1].night + b[1].between) - (a[1].day + a[1].night + a[1].between))
+                .map(([dept, shifts]) => {
+                    const total = shifts.day + shifts.night + shifts.between;
+                    const betweenText = shifts.between ? `, Between: ${shifts.between} min` : "";
+                    return `- ${dept}: ${total} min (Day: ${shifts.day}, Night: ${shifts.night}${betweenText})`;
+                });
+
+            const machineLines = sortMapEntries(machineMap)
+                .slice(0, 10)
+                .map(([machine, min], index) => `${index + 1}. ${machine}: ${min} min`);
+
+            return [
+                title,
+                getDashboardFilterLabel(),
+                ``,
+                `Total downtime: ${totalMin} min`,
+                `Total events: ${data.length}`,
+                `MTTR: ${data.length ? (totalMin / data.length).toFixed(1) : 0} min`,
+                `Critical line: ${topLine ? `${topLine[0]} (${topLine[1]} min)` : "-"}`,
+                `Top machine: ${topMachine ? `${topMachine[0]} (${topMachine[1]} min)` : "-"}`,
+                ``,
+                `Total Loss Time by Line`,
+                lineLines.length ? lineLines.join('\n') : "- No downtime records",
+                ``,
+                `Daily Trend`,
+                trendLines.length ? trendLines.join('\n') : "- No downtime records",
+                ``,
+                `Dept. Responsibility by Shift`,
+                deptLines.length ? deptLines.join('\n') : "- No downtime records",
+                ``,
+                `Top 10 Machine Loss`,
+                machineLines.length ? machineLines.join('\n') : "- No downtime records",
+                ``,
+                `Generated from Downtime Dashboard at ${formatTime12Hour(`${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`)}`
+            ].join('\n');
+        }
+
         window.handleLogin = () => {
             const u = document.getElementById('login-user').value.trim();
             const p = document.getElementById('login-pass').value.trim();
@@ -254,6 +505,9 @@
                 document.getElementById('screen-auth').style.display='none';
                 document.getElementById('screen-app').style.display='block';
                 document.getElementById('user-display').textContent = `USER: ${currentUser}`;
+                document.getElementById('settings-tab').style.display = isAdmin() ? 'block' : 'none';
+                loadSettings();
+                loadAlertSettings();
                 loadData();
             } else { alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง"); }
         };
@@ -311,6 +565,7 @@
     updateUI(filtered);
 };
         function updateUI(data) {
+            currentFilteredData = data;
             let totalMin = 0;
             const reasonMap = {}, machineMap = {}, trendMap = {}, lineMap = {};
             const tbody = document.getElementById('history-body'); 
@@ -319,7 +574,10 @@
             data.forEach(d => {
                 const min = parseInt(d.manual_min) || 0;
                 totalMin += min;
-                reasonMap[d.reason] = (reasonMap[d.reason]||0) + min;
+                const dept = d.reason || "Unknown";
+                const shift = getShiftLabel(d.start_time);
+                if (!reasonMap[dept]) reasonMap[dept] = { day: 0, night: 0, between: 0 };
+                reasonMap[dept][shift] += min;
                 lineMap[d.line] = (lineMap[d.line]||0) + min;
                 
                 const mKey = `[${d.line}] ${d.machine || "Unknown"}`;
@@ -330,8 +588,8 @@
 
                 if (tbody) {
                     const row = document.createElement('tr');
-                    const startTime = d.start_time ? d.start_time.split('T')[1] : "-";
-                    const endTime = d.end_time ? d.end_time.split('T')[1] : "-";
+                    const startTime = d.start_time ? formatTime12Hour(d.start_time.split('T')[1]) : "-";
+                    const endTime = d.end_time ? formatTime12Hour(d.end_time.split('T')[1]) : "-";
                     row.innerHTML = `
                         <td>${day}</td><td style="color:var(--primary); font-weight:600">${startTime}</td>
                         <td style="color:var(--purple); font-weight:600">${endTime}</td>
@@ -388,14 +646,56 @@
             });
         }
 
+        function formatTime12Hour(time) {
+            if (!time) return "-";
+            const [hours, minutes] = time.split(':').map(Number);
+            if (Number.isNaN(hours) || Number.isNaN(minutes)) return time;
+
+            const period = hours >= 12 ? "PM" : "AM";
+            const displayHours = hours % 12 || 12;
+            return `${displayHours}:${String(minutes).padStart(2, '0')} ${period}`;
+        }
+
+        function getShiftLabel(startTime) {
+            const time = startTime?.split('T')[1];
+            if (!time) return "between";
+
+            const [hours, minutes] = time.split(':').map(Number);
+            const totalMinutes = (hours * 60) + minutes;
+            const dayStart = (7 * 60) + 40;
+            const dayEnd = (19 * 60) + 50;
+            const nightStart = 20 * 60;
+            const nightEnd = (7 * 60) + 20;
+
+            if (totalMinutes >= dayStart && totalMinutes <= dayEnd) return "day";
+            if (totalMinutes >= nightStart || totalMinutes <= nightEnd) return "night";
+            return "between";
+        }
+
         function renderReasonChart(reasonMap) {
             const canvasId = 'reasonChart';
             if (charts[canvasId]) charts[canvasId].destroy();
             const ctx = document.getElementById(canvasId).getContext('2d');
+            const depts = Object.keys(reasonMap);
+            const hasBetweenShift = depts.some(dept => reasonMap[dept].between > 0);
+            const datasets = [
+                { label: 'Day Shift 7:40 AM-7:50 PM', data: depts.map(dept => reasonMap[dept].day), backgroundColor: '#5c59e8', borderRadius: 6 },
+                { label: 'Night Shift 8:00 PM-7:20 AM', data: depts.map(dept => reasonMap[dept].night), backgroundColor: '#10b981', borderRadius: 6 }
+            ];
+
+            if (hasBetweenShift) {
+                datasets.push({ label: 'Between Shifts', data: depts.map(dept => reasonMap[dept].between), backgroundColor: '#f59e0b', borderRadius: 6 });
+            }
+
             charts[canvasId] = new Chart(ctx, {
-                type: 'doughnut',
-                data: { labels: Object.keys(reasonMap), datasets: [{ data: Object.values(reasonMap), backgroundColor: ['#5c59e8', '#8b5cf6', '#ef4444', '#f59e0b', '#10b981'] }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '40%' }
+                type: 'bar',
+                data: { labels: depts, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+                    plugins: { legend: { position: 'bottom' } }
+                }
             });
         }
 
@@ -436,6 +736,33 @@
                     mSelect.appendChild(opt);
                 });
             } else { mSelect.disabled = true; }
+        };
+
+        window.saveAlertSettings = async () => {
+            if (!isAdmin()) return alert("เฉพาะ Admin เท่านั้นที่แก้ไข Alert ได้");
+            const recipients = document.getElementById('alert-recipients').value
+                .split(/[\n,;]+/)
+                .map(email => email.trim())
+                .filter(Boolean);
+            const sendTime = document.getElementById('alert-send-time').value || "07:30";
+
+            await setDoc(alertSettingsDoc(), {
+                recipients,
+                sendTime,
+                updatedAt: serverTimestamp()
+            }, { merge: true });
+            alert("บันทึกรายชื่อ Email Alert สำเร็จ");
+        };
+
+        window.prepareDashboardSummaryEmail = () => {
+            const recipients = alertSettings.recipients || [];
+            if (!recipients.length) return alert("กรุณาใส่ Email Recipients ก่อน");
+
+            const subject = `Dashboard Downtime Summary - ${getLocalDateValue()}`;
+            const body = buildDashboardSummary(currentFilteredData, subject);
+            const recipientList = recipients.map(email => encodeURIComponent(email)).join(',');
+            const mailto = `mailto:${recipientList}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailto;
         };
 
         window.submitEvent = async () => {
