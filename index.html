@@ -521,6 +521,7 @@
         function buildDashboardSummary(data = currentFilteredData, title = "Dashboard Downtime Summary") {
             const lineMap = {}, machineMap = {}, deptShiftMap = {};
             let totalMin = 0;
+            const webLink = "https://thi-frank.github.io/downtimelog/";
 
             data.forEach(d => {
                 const min = parseInt(d.manual_min) || 0;
@@ -563,6 +564,7 @@
             return [
                 title,
                 getDashboardFilterLabel(),
+                `Web link: ${webLink}`,
                 ``,
                 `Total downtime: ${totalMin} min`,
                 `Total events: ${data.length}`,
