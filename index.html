@@ -37,6 +37,7 @@
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 1.8rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
         .card-title { font-weight: 800; margin-bottom: 1.8rem; display: flex; align-items: center; gap: 8px; }
         .card-full { grid-column: span 2; }
+        .chart-box { height: 400px; }
 
         .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 1.2rem; }
         label { font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; display: block; }
@@ -67,11 +68,20 @@
         .production-head { display: flex; justify-content: space-between; gap: 1rem; align-items: center; margin-bottom: 1rem; }
         .machine-list { display: grid; gap: 8px; }
         .machine-row { display: flex; justify-content: space-between; gap: 1rem; align-items: center; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem 0.9rem; }
+        .top-list { display: grid; gap: 0.9rem; }
+        .top-list-row { display: grid; grid-template-columns: 34px 1fr auto; gap: 0.8rem; align-items: center; padding: 0.85rem 0; border-bottom: 1px solid var(--border); }
+        .top-list-row:last-child { border-bottom: none; }
+        .top-rank { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--primary-light); color: var(--primary); font-weight: 800; font-size: 0.85rem; }
+        .top-text { min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
+        .top-meta { color: var(--danger); font-weight: 800; white-space: nowrap; }
         .empty-state { color: var(--text-sub); font-size: 0.9rem; padding: 1rem; background: #f8fafc; border: 1px dashed var(--border); border-radius: 14px; }
 
         .footer { text-align: center; padding: 2rem; color: var(--text-sub); font-size: 0.85rem; font-weight: 600; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @media (max-width: 900px) { .settings-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 900px) {
+            .charts-grid, .settings-grid { grid-template-columns: 1fr; }
+            .card-full { grid-column: span 1; }
+        }
     </style>
 </head>
 <body>
@@ -125,10 +135,12 @@
             </div>
 
             <div class="charts-grid">
-                <div class="card card-full"><div class="card-title">Total Loss Time by Line (Minutes)</div><div style="height:400px;"><canvas id="lineLossChart"></canvas></div></div>
+                <div class="card"><div class="card-title">Total Loss Time by Line (Minutes)</div><div class="chart-box"><canvas id="lineLossChart"></canvas></div></div>
+                <div class="card"><div class="card-title">Total Loss Time by Machine (Minutes)</div><div class="chart-box"><canvas id="machineChart"></canvas></div></div>
                 <div class="card"><div class="card-title">Daily Trend (Minutes)</div><div style="height:300px;"><canvas id="trendChart"></canvas></div></div>
                 <div class="card"><div class="card-title">Dept. Responsibility by Shift</div><div style="height:300px;"><canvas id="reasonChart"></canvas></div></div>
-                <div class="card card-full"><div class="card-title">Top 10 Machine Loss</div><div style="height:550px;"><canvas id="machineChart"></canvas></div></div>
+                <div class="card"><div class="card-title">Top 5 Problems</div><div id="top-problems" class="top-list"></div></div>
+                <div class="card"><div class="card-title">Top 5 Root Causes</div><div id="top-root-causes" class="top-list"></div></div>
             </div>
         </div>
 
@@ -372,7 +384,7 @@
                     <div class="production-item">
                         <div class="production-head">
                             <h3>${escapeHtml(item.name)}</h3>
-                            <button class="btn-danger" onclick="deleteProduction('${item.id}', '${escapeHtml(item.name)}')">Delete Production</button>
+                            <button class="btn-danger" onclick="deleteProduction('${item.id}', '${encodeURIComponent(item.name)}')">Delete Production</button>
                         </div>
                         <div class="form-row" style="grid-template-columns: 1fr auto; align-items:end;">
                             <div>
@@ -410,6 +422,83 @@
             recipientsEl.disabled = !isAdmin();
             sendTimeEl.disabled = !isAdmin();
         }
+
+        window.addProduction = async () => {
+            if (!isAdmin()) return alert("Admin user only can add production settings.");
+
+            const input = document.getElementById('new-production-name');
+            const name = input.value.trim();
+            if (!name) return alert("Please enter production name.");
+
+            const exists = productionSettings.some(item => item.name.toLowerCase() === name.toLowerCase());
+            if (exists) return alert("This production name already exists.");
+
+            try {
+                await addDoc(settingsCollection(), {
+                    name,
+                    machines: [],
+                    createdAt: serverTimestamp()
+                });
+                input.value = "";
+                alert("Production added successfully.");
+            } catch (e) {
+                alert("Add production error: " + e.message);
+            }
+        };
+
+        window.deleteProduction = async (id, encodedName) => {
+            if (!isAdmin()) return alert("Admin user only can delete production settings.");
+            const name = decodeURIComponent(encodedName);
+            if (!confirm(`Delete production "${name}"?`)) return;
+
+            try {
+                await deleteDoc(doc(db, 'productionSettings', id));
+                alert("Production deleted successfully.");
+            } catch (e) {
+                alert("Delete production error: " + e.message);
+            }
+        };
+
+        window.addMachine = async (productionId) => {
+            if (!isAdmin()) return alert("Admin user only can edit machine settings.");
+
+            const input = document.getElementById(`machine-input-${productionId}`);
+            const machineName = input.value.trim();
+            if (!machineName) return alert("Please enter machine name.");
+
+            const production = productionSettings.find(item => item.id === productionId);
+            const machines = Array.isArray(production?.machines) ? production.machines : [];
+            const exists = machines.some(machine => machine.toLowerCase() === machineName.toLowerCase());
+            if (exists) return alert("This machine name already exists in this production.");
+
+            try {
+                await updateDoc(doc(db, 'productionSettings', productionId), {
+                    machines: arrayUnion(machineName),
+                    updatedAt: serverTimestamp()
+                });
+                input.value = "";
+                alert("Machine added successfully.");
+            } catch (e) {
+                alert("Add machine error: " + e.message);
+            }
+        };
+
+        window.deleteMachine = async (productionId, encodedMachineName) => {
+            if (!isAdmin()) return alert("Admin user only can edit machine settings.");
+
+            const machineName = decodeURIComponent(encodedMachineName);
+            if (!confirm(`Delete machine "${machineName}"?`)) return;
+
+            try {
+                await updateDoc(doc(db, 'productionSettings', productionId), {
+                    machines: arrayRemove(machineName),
+                    updatedAt: serverTimestamp()
+                });
+                alert("Machine deleted successfully.");
+            } catch (e) {
+                alert("Delete machine error: " + e.message);
+            }
+        };
 
         function getLocalDateValue(date = new Date()) {
             const year = date.getFullYear();
@@ -567,7 +656,7 @@
         function updateUI(data) {
             currentFilteredData = data;
             let totalMin = 0;
-            const reasonMap = {}, machineMap = {}, trendMap = {}, lineMap = {};
+            const reasonMap = {}, machineMap = {}, trendMap = {}, lineMap = {}, problemMap = {}, rootCauseMap = {};
             const tbody = document.getElementById('history-body'); 
             if(tbody) tbody.innerHTML = "";
 
@@ -582,6 +671,10 @@
                 
                 const mKey = `[${d.line}] ${d.machine || "Unknown"}`;
                 machineMap[mKey] = (machineMap[mKey]||0) + min;
+                const problem = (d.problem || "").trim();
+                const rootCause = (d.root_cause || "").trim();
+                if (problem) problemMap[problem] = (problemMap[problem] || 0) + min;
+                if (rootCause) rootCauseMap[rootCause] = (rootCauseMap[rootCause] || 0) + min;
 
                 const day = d.start_time?.split('T')[0];
                 if(day) trendMap[day] = (trendMap[day]||0) + min;
@@ -616,7 +709,31 @@
             renderLineLossChart(lineMap);
             renderTrendChart(trendMap);
             renderReasonChart(reasonMap);
+            renderTopList('top-problems', problemMap);
+            renderTopList('top-root-causes', rootCauseMap);
             renderMachineChart(machineMap);
+        }
+
+        function renderTopList(elementId, valueMap) {
+            const list = document.getElementById(elementId);
+            if (!list) return;
+
+            const topItems = Object.entries(valueMap)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            if (!topItems.length) {
+                list.innerHTML = '<div class="empty-state">No data for selected filter.</div>';
+                return;
+            }
+
+            list.innerHTML = topItems.map(([label, minutes], index) => `
+                <div class="top-list-row">
+                    <div class="top-rank">${index + 1}</div>
+                    <div class="top-text">${escapeHtml(label)}</div>
+                    <div class="top-meta">${minutes.toLocaleString()} Min</div>
+                </div>
+            `).join('');
         }
 
         // --- Charts Functions ---
@@ -727,10 +844,11 @@
         window.updateMachineOptions = () => {
             const line = document.getElementById('line').value;
             const mSelect = document.getElementById('machine');
+            const machinesByLine = activeMachineData();
             mSelect.innerHTML = '<option value="">-- Select Machine --</option>';
-            if (line && machineData[line]) {
+            if (line && machinesByLine[line]) {
                 mSelect.disabled = false;
-                machineData[line].forEach(m => {
+                machinesByLine[line].forEach(m => {
                     let opt = document.createElement('option');
                     opt.value = m; opt.textContent = m;
                     mSelect.appendChild(opt);
