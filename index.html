@@ -15,6 +15,7 @@
             --border: #e2e8f0; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
             --purple: #8b5cf6;
         }
+        html[data-theme="dark"] { --primary:#818cf8; --primary-light:#252b55; --bg:#0f172a; --card:#172033; --text-main:#e5e7eb; --text-sub:#a8b3c7; --border:#334155; --success:#34d399; --danger:#f87171; --warning:#fbbf24; --purple:#a78bfa; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Plus Jakarta Sans', 'Sarabun', sans-serif; background: var(--bg); color: var(--text-main); line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
         
@@ -83,6 +84,19 @@
         .photo-placeholder { color: #94a3b8; font-size: 0.78rem; white-space: nowrap; }
         .image-modal-content { margin: 3vh auto; padding: 1rem; width: min(94vw, 1100px); height: 94vh; max-height: 94vh; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
         .image-modal-content img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 14px; }
+        .theme-toggle { background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe; padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:700; }
+        html[data-theme="dark"] .header-nav, html[data-theme="dark"] .card, html[data-theme="dark"] .filter-bar, html[data-theme="dark"] .stat-box, html[data-theme="dark"] .modal-content, html[data-theme="dark"] .machine-row { background:var(--card); }
+        html[data-theme="dark"] .tab-menu, html[data-theme="dark"] th, html[data-theme="dark"] .empty-state, html[data-theme="dark"] .photo-upload, html[data-theme="dark"] .production-item { background:#111a2b; }
+        html[data-theme="dark"] .tab-btn.active, html[data-theme="dark"] .btn-reset { background:#27334a; color:var(--text-main); }
+        html[data-theme="dark"] input, html[data-theme="dark"] select, html[data-theme="dark"] textarea { background:#101827; color:var(--text-main); color-scheme:dark; }
+        html[data-theme="dark"] .theme-toggle { background:#27334a; color:#f8fafc; border-color:#475569; }
+        .toast-area { position:fixed; right:24px; bottom:24px; z-index:3000; display:grid; gap:10px; width:min(420px, calc(100vw - 32px)); }
+        .toast-message { background:var(--card); color:var(--text-main); border:1px solid var(--border); border-left:5px solid var(--primary); border-radius:14px; padding:14px 16px; box-shadow:0 16px 35px rgba(15,23,42,.22); animation:slideUp .2s ease-out; }
+        .toast-message.error { border-left-color:var(--danger); }
+        .toast-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+        .toast-actions button { border:1px solid var(--border); background:#f1f5f9; color:#334155; padding:7px 14px; border-radius:9px; cursor:pointer; font-weight:700; }
+        .toast-actions .confirm-action { background:var(--danger); color:white; border-color:var(--danger); }
+        html[data-theme="dark"] .toast-actions button { background:#27334a; color:var(--text-main); }
 
         .footer { text-align: center; padding: 2rem; color: var(--text-sub); font-size: 0.85rem; font-weight: 600; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -110,7 +124,10 @@
                 <h1>Downtime <span style="color:var(--primary)">Dashboard</span></h1>
                 <p id="user-display" style="font-size: 0.8rem; color: var(--primary); font-weight: 800;"></p>
             </div>
-            <button onclick="doSignOut()" style="background:#fee2e2; color:var(--danger); border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight:700;">Sign Out</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">Dark Mode</button>
+                <button onclick="doSignOut()" style="background:#fee2e2; color:var(--danger); border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight:700;">Sign Out</button>
+            </div>
         </div>
 
         <div class="tab-menu">
@@ -316,6 +333,7 @@
 
         <footer class="footer">Develop by Thirawat Th.</footer>
     </div>
+    <div id="toast-area" class="toast-area" aria-live="polite"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -334,6 +352,51 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
         let charts = {}, rawData = [], currentFilteredData = [], currentUser = null, productionSettings = [], alertSettings = { recipients: ["thithamm@deltaww.com"], sendTime: "07:30" };
+
+        function applyTheme(theme) {
+            const selected = theme === 'dark' ? 'dark' : 'light';
+            document.documentElement.dataset.theme = selected;
+            const button = document.getElementById('theme-toggle');
+            if (button) button.textContent = selected === 'dark' ? 'Light Mode' : 'Dark Mode';
+        }
+        applyTheme(localStorage.getItem('downtime-theme') || 'light');
+        window.toggleTheme = () => {
+            const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('downtime-theme', next);
+            applyTheme(next);
+        };
+
+        function showToast(message, type = 'info', duration = 3500) {
+            const area = document.getElementById('toast-area');
+            const toast = document.createElement('div');
+            toast.className = `toast-message ${type}`;
+            toast.textContent = String(message);
+            area.appendChild(toast);
+            if (duration) setTimeout(() => toast.remove(), duration);
+            return toast;
+        }
+
+        window.alert = (message) => {
+            const type = /error|incorrect|please|required|failed|only admin/i.test(String(message)) ? 'error' : 'info';
+            showToast(message, type);
+        };
+
+        function showConfirm(message) {
+            return new Promise(resolve => {
+                const toast = showToast(message, 'error', 0);
+                const actions = document.createElement('div');
+                actions.className = 'toast-actions';
+                const cancelButton = document.createElement('button');
+                cancelButton.textContent = 'Cancel';
+                const confirmButton = document.createElement('button');
+                confirmButton.className = 'confirm-action';
+                confirmButton.textContent = 'Delete';
+                actions.append(cancelButton, confirmButton);
+                toast.appendChild(actions);
+                cancelButton.onclick = () => { toast.remove(); resolve(false); };
+                confirmButton.onclick = () => { toast.remove(); resolve(true); };
+            });
+        }
 
         const machineData = {
             "D7B": ["Auto Magazine Loader", "Auto Flip", "Auto PWB Loader", "Auto Glue 1", "Auto Bottom Core Assembly", "Auto Buffer 1", "Auto Close + Flip + Open Carrier", "Auto Glue 2", "Auto Glue 3", "Auto Top Core Assembly", "Auto Buffer 2", "Auto Close + Flip Carrier", "Auto Inductance 1", "Auto Buffer 3", "Auto Reflow", "Auto Inductance 2", "Auto PWB Unloader", "Auto Loader T1", "Auto Calibration M1", "Auto Calibration M2", "Auto Calibration M3", "Auto Calibration M4", "Auto Buffer T1", "ATS1 M1", "ATS1 M2", "Auto Carrier Unloader T1", "Auto Magazine Unloader T1", "Auto Magazine Loader T2", "Auto Carrier Loader T2", "ATS2 M1", "ATS2 M2", "Auto Buffer T2", "Auto Parallel M1", "Auto Parallel M2", "Auto Carrier Unloader T2", "Auto AOI", "Auto AOI (Packing)"],
@@ -495,7 +558,7 @@
         window.deleteProduction = async (id, encodedName) => {
             if (!isAdmin()) return alert("Admin user only can delete production settings.");
             const name = decodeURIComponent(encodedName);
-            if (!confirm(`Delete production "${name}"?`)) return;
+            if (!(await showConfirm(`Delete production "${name}"?`))) return;
 
             try {
                 await deleteDoc(doc(db, 'productionSettings', id));
@@ -533,7 +596,7 @@
             if (!isAdmin()) return alert("Admin user only can edit machine settings.");
 
             const machineName = decodeURIComponent(encodedMachineName);
-            if (!confirm(`Delete machine "${machineName}"?`)) return;
+            if (!(await showConfirm(`Delete machine "${machineName}"?`))) return;
 
             try {
                 await updateDoc(doc(db, 'productionSettings', productionId), {
@@ -986,7 +1049,6 @@
                 if (afterUrl) photoChanges.after_photo_url = afterUrl;
                 if (Object.keys(photoChanges).length) await updateDoc(recordRef, photoChanges);
                 resetRecordForm();
-                switchPage('history', document.getElementById('history-tab'));
                 alert("Record saved successfully.");
             } catch (e) {
                 const saveButton = document.getElementById('btn-save-record');
@@ -1015,8 +1077,9 @@
 
         window.confirmDelete = async (id) => {
             if(currentUser !== 'Admin') return alert("Only Admin can delete records.");
-            if(confirm("Are you sure you want to delete this record?")) {
+            if(await showConfirm("Are you sure you want to delete this record?")) {
                 await deleteDoc(doc(db, 'events', id));
+                showToast("Record deleted successfully.");
             }
         };
 
