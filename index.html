@@ -273,8 +273,14 @@
                 </div>
                 <div class="card">
                     <div class="card-title">Production and Machine Names</div>
+                    <div style="margin-bottom:1.25rem;">
+                        <label>Select Line</label>
+                        <select id="settings-production-select" onchange="renderSelectedProduction()">
+                            <option value="">-- Select Line --</option>
+                        </select>
+                    </div>
                     <div id="settings-list" class="settings-list">
-                        <div class="empty-state">Loading settings from Firebase...</div>
+                        <div class="empty-state">Select a line to view its machine list.</div>
                     </div>
                 </div>
             </div>
@@ -472,41 +478,62 @@
 
         function renderSettingsPage() {
             const list = document.getElementById('settings-list');
-            if (!list) return;
+            const select = document.getElementById('settings-production-select');
+            if (!list || !select) return;
             if (!isAdmin()) {
+                select.disabled = true;
                 list.innerHTML = '<div class="empty-state">Admin user only can edit production and machine settings.</div>';
                 return;
             }
+            select.disabled = false;
             if (!productionSettings.length) {
+                select.innerHTML = '<option value="">-- No Lines Available --</option>';
                 list.innerHTML = '<div class="empty-state">No production names found.</div>';
                 return;
             }
-            list.innerHTML = productionSettings.map(item => {
-                const machineRows = (item.machines || []).map(machine => `
-                    <div class="machine-row">
-                        <span>${escapeHtml(machine)}</span>
-                        <button class="btn-danger" onclick="deleteMachine('${item.id}', '${encodeURIComponent(machine)}')">Delete</button>
-                    </div>
-                `).join('') || '<div class="empty-state">No machine names yet.</div>';
-
-                return `
-                    <div class="production-item">
-                        <div class="production-head">
-                            <h3>${escapeHtml(item.name)}</h3>
-                            <button class="btn-danger" onclick="deleteProduction('${item.id}', '${encodeURIComponent(item.name)}')">Delete Production</button>
-                        </div>
-                        <div class="form-row" style="grid-template-columns: 1fr auto; align-items:end;">
-                            <div>
-                                <label>Machine Name</label>
-                                <input type="text" id="machine-input-${item.id}" placeholder="Add machine for ${escapeHtml(item.name)}">
-                            </div>
-                            <button class="btn-submit btn-small" onclick="addMachine('${item.id}')">ADD</button>
-                        </div>
-                        <div class="machine-list">${machineRows}</div>
-                    </div>
-                `;
-            }).join('');
+            const previousValue = select.value;
+            select.innerHTML = '<option value="">-- Select Line --</option>' + productionSettings.map(item =>
+                `<option value="${item.id}">${escapeHtml(item.name)}</option>`
+            ).join('');
+            if (productionSettings.some(item => item.id === previousValue)) select.value = previousValue;
+            window.renderSelectedProduction();
         }
+
+        window.renderSelectedProduction = () => {
+            const list = document.getElementById('settings-list');
+            const selectedId = document.getElementById('settings-production-select').value;
+            if (!selectedId) {
+                list.innerHTML = '<div class="empty-state">Select a line to view its machine list.</div>';
+                return;
+            }
+            const item = productionSettings.find(entry => entry.id === selectedId);
+            if (!item) {
+                list.innerHTML = '<div class="empty-state">Selected line was not found.</div>';
+                return;
+            }
+            const machineRows = (item.machines || []).map(machine => `
+                <div class="machine-row">
+                    <span>${escapeHtml(machine)}</span>
+                    <button class="btn-danger" onclick="deleteMachine('${item.id}', '${encodeURIComponent(machine)}')">Delete</button>
+                </div>
+            `).join('') || '<div class="empty-state">No machine names yet.</div>';
+            list.innerHTML = `
+                <div class="production-item">
+                    <div class="production-head">
+                        <h3>${escapeHtml(item.name)}</h3>
+                        <button class="btn-danger" onclick="deleteProduction('${item.id}', '${encodeURIComponent(item.name)}')">Delete Production</button>
+                    </div>
+                    <div class="form-row" style="grid-template-columns:1fr auto; align-items:end;">
+                        <div>
+                            <label>Machine Name</label>
+                            <input type="text" id="machine-input-${item.id}" placeholder="Add machine for ${escapeHtml(item.name)}">
+                        </div>
+                        <button class="btn-submit btn-small" onclick="addMachine('${item.id}')">ADD</button>
+                    </div>
+                    <div class="machine-list">${machineRows}</div>
+                </div>
+            `;
+        };
 
         function loadAlertSettings() {
             onSnapshot(alertSettingsDoc(), snap => {
