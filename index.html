@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <style>
         :root { 
             --primary: #5c59e8; --primary-light: #eef2ff; --bg: #f8fafc; 
@@ -61,7 +62,7 @@
         .page-content.active { display: block; animation: slideUp 0.3s ease-out; }
 
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
-        .modal-content { background: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 800px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .modal-content { background: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
         .settings-grid { display: grid; grid-template-columns: minmax(280px, 0.8fr) minmax(360px, 1.2fr); gap: 1.5rem; align-items: start; }
         .settings-list { display: grid; gap: 1rem; }
         .production-item { border: 1px solid var(--border); border-radius: 18px; padding: 1.2rem; background: #fcfdfe; }
@@ -75,6 +76,13 @@
         .top-text { min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
         .top-meta { color: var(--danger); font-weight: 800; white-space: nowrap; }
         .empty-state { color: var(--text-sub); font-size: 0.9rem; padding: 1rem; background: #f8fafc; border: 1px dashed var(--border); border-radius: 14px; }
+        .photo-upload { border: 1.5px dashed var(--border); border-radius: 16px; padding: 1rem; background: #f8fafc; }
+        .photo-preview { margin-top: 0.8rem; min-height: 72px; display: flex; align-items: center; gap: 10px; color: var(--text-sub); font-size: 0.8rem; }
+        .photo-preview img, .history-photo { width: 76px; height: 64px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); background: white; cursor: pointer; }
+        .history-photo:hover { border-color: var(--primary); transform: scale(1.04); }
+        .photo-placeholder { color: #94a3b8; font-size: 0.78rem; white-space: nowrap; }
+        .image-modal-content { margin: 3vh auto; padding: 1rem; width: min(94vw, 1100px); height: 94vh; max-height: 94vh; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
+        .image-modal-content img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 14px; }
 
         .footer { text-align: center; padding: 2rem; color: var(--text-sub); font-size: 0.85rem; font-weight: 600; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -92,7 +100,7 @@
             <div style="margin-bottom:1.2rem"><label>Username</label><input type="text" id="login-user"></div>
             <div style="margin-bottom:1.8rem"><label>Password</label><input type="password" id="login-pass"></div>
             <button class="btn-submit" onclick="handleLogin()">LOGIN</button>
-            <p style="text-align: center; margin-top: 2rem; color: #94a3b8; font-size: 0.75rem;">Develop by Thirawat Th.</p>
+            <p style="text-align: center; margin-top: 2rem; color: #94a3b8; font-size: 0.75rem;">Develop by Thirawat Th. (Ver.05)</p>
         </div>
     </div>
 
@@ -108,7 +116,7 @@
         <div class="tab-menu">
             <button class="tab-btn active" onclick="switchPage('dashboard', this)">Dashboard</button>
             <button class="tab-btn" onclick="switchPage('record', this)">Downtime Record</button>
-            <button class="tab-btn" onclick="switchPage('history', this)">History Logs</button>
+            <button class="tab-btn" id="history-tab" onclick="switchPage('history', this)">History Logs</button>
             <button class="tab-btn" id="settings-tab" onclick="switchPage('settings', this)" style="display:none;">Settings</button>
         </div>
 
@@ -150,8 +158,8 @@
                 <h3 style="margin-bottom:1.5rem;">Create Downtime Entry</h3>
                 <div class="form-row">
                     <div><label>Date</label><input type="date" id="record_date"></div>
-                    <div><label>Start Time</label><input type="time" id="start_time_only" onchange="autoCalcTime()"></div>
-                    <div><label>End Time</label><input type="time" id="end_time_only" onchange="autoCalcTime()"></div>
+                    <div><label>Start Time</label><input type="text" id="start_time_only" placeholder="HH:MM" inputmode="numeric" maxlength="5" oninput="format24HourInput(this)" onchange="if(validate24HourInput(this)) autoCalcTime()"></div>
+                    <div><label>End Time</label><input type="text" id="end_time_only" placeholder="HH:MM" inputmode="numeric" maxlength="5" oninput="format24HourInput(this)" onchange="if(validate24HourInput(this)) autoCalcTime()"></div>
                     <div><label>Minutes</label><input type="number" id="manual_min" readonly value="0"></div>
                 </div>
                 <div class="form-row">
@@ -169,6 +177,18 @@
                     <div><label>Root Cause</label><textarea id="root_cause" rows="2"></textarea></div>
                 </div>
                 <div style="margin-bottom:1rem"><label>Action</label><textarea id="action" rows="2"></textarea></div>
+                <div class="form-row">
+                    <div class="photo-upload">
+                        <label>Before Picture</label>
+                        <input type="file" id="record_before_photo" accept="image/*" capture="environment" onchange="previewRecordPhoto('before')">
+                        <div id="record_before_preview" class="photo-preview"><span>No picture selected</span></div>
+                    </div>
+                    <div class="photo-upload">
+                        <label>After Picture</label>
+                        <input type="file" id="record_after_photo" accept="image/*" capture="environment" onchange="previewRecordPhoto('after')">
+                        <div id="record_after_preview" class="photo-preview"><span>No picture selected</span></div>
+                    </div>
+                </div>
                 <button class="btn-submit" id="btn-save-record" onclick="submitEvent()">SAVE RECORD</button>
             </div>
         </div>
@@ -178,12 +198,12 @@
             <div class="filter-bar">
                 <div><label>Date Start</label><input type="date" id="f-start" onchange="runFilter()"></div>
                 <div><label>Date End</label><input type="date" id="f-end" onchange="runFilter()"></div>
-                <div><label>Time Start</label><input type="time" id="f-time-start" onchange="runFilter()"></div>
-                <div><label>Time End</label><input type="time" id="f-time-end" onchange="runFilter()"></div>
+                <div><label>Time Start</label><input type="text" id="f-time-start" placeholder="HH:MM" inputmode="numeric" maxlength="5" oninput="format24HourInput(this)" onchange="validate24HourInput(this); runFilter()"></div>
+                <div><label>Time End</label><input type="text" id="f-time-end" placeholder="HH:MM" inputmode="numeric" maxlength="5" oninput="format24HourInput(this)" onchange="validate24HourInput(this); runFilter()"></div>
                 <div><label>Line</label><select id="f-line" onchange="runFilter()"><option value="">All</option></select></div>
                 <div><label>Machine</label><input type="text" id="f-machine" placeholder="Search..." onkeyup="runFilter()"></div>
                 <button class="btn-reset" onclick="resetFilters()">Reset</button>
-                <button class="btn-export" onclick="exportToExcel()">Export Excel</button>
+                <button class="btn-export" id="btn-export-excel" onclick="exportToExcel()">Export Excel</button>
             </div>
             <div class="card table-container">
                 <table id="main-table">
@@ -200,6 +220,8 @@
                             <th>Min</th>
                             <th>Dept</th>
                             <th>Owner</th>
+                            <th>Before</th>
+                            <th>After</th>
                             <th>Manage</th>
                         </tr>
                     </thead>
@@ -269,7 +291,26 @@
                         </select>
                     </div>
                 </div>
-                <button class="btn-submit" onclick="saveEdit()">UPDATE DATA</button>
+                <div class="form-row">
+                    <div class="photo-upload">
+                        <label>Before Picture</label>
+                        <input type="file" id="edit_before_photo" accept="image/*" capture="environment" onchange="previewSelectedPhoto('before')">
+                        <div id="edit_before_preview" class="photo-preview"><span>No picture attached</span></div>
+                    </div>
+                    <div class="photo-upload">
+                        <label>After Picture</label>
+                        <input type="file" id="edit_after_photo" accept="image/*" capture="environment" onchange="previewSelectedPhoto('after')">
+                        <div id="edit_after_preview" class="photo-preview"><span>No picture attached</span></div>
+                    </div>
+                </div>
+                <button class="btn-submit" id="btn-save-edit" onclick="saveEditWithPhotos()">UPDATE DATA</button>
+            </div>
+        </div>
+
+        <div id="imageModal" class="modal" onclick="closeImageModal()">
+            <div class="modal-content image-modal-content">
+                <button onclick="closeImageModal()" aria-label="Close image" style="position:absolute; right:18px; top:12px; z-index:2; background:white; border:none; border-radius:50%; width:42px; height:42px; font-size:1.8rem; cursor:pointer;">&times;</button>
+                <img id="imageModalPhoto" alt="Downtime attachment">
             </div>
         </div>
 
@@ -279,6 +320,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc, updateDoc, setDoc, getDocs, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyB5Y953TTOoguUdUJItUgnJVb6X0zas9eM", 
@@ -290,6 +332,7 @@
         
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const storage = getStorage(app);
         let charts = {}, rawData = [], currentFilteredData = [], currentUser = null, productionSettings = [], alertSettings = { recipients: ["thithamm@deltaww.com"], sendTime: "07:30" };
 
         const machineData = {
@@ -314,6 +357,9 @@
         const escapeHtml = (value = "") => String(value).replace(/[&<>"']/g, ch => ({
             "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
         }[ch]));
+        const photoCell = (url, label) => url
+            ? `<img class="history-photo" src="${escapeHtml(url)}" alt="${label} picture" loading="lazy" onclick="openImageModal('${encodeURIComponent(url)}')">`
+            : '<span class="photo-placeholder">No picture</span>';
 
         function setSelectOptions(selectId, placeholderText, names) {
             const select = document.getElementById(selectId);
@@ -584,7 +630,7 @@
                 `Top 10 Machine Loss`,
                 machineLines.length ? machineLines.join('\n') : "- No downtime records",
                 ``,
-                `Generated from Downtime Dashboard at ${formatTime12Hour(`${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`)}`
+                `Generated from Downtime Dashboard at ${formatTime24Hour(`${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`)}`
             ].join('\n');
         }
 
@@ -600,7 +646,7 @@
                 loadSettings();
                 loadAlertSettings();
                 loadData();
-            } else { alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง"); }
+            } else { alert("Incorrect username or password."); }
         };
 
         window.doSignOut = () => location.reload();
@@ -683,8 +729,8 @@
 
                 if (tbody) {
                     const row = document.createElement('tr');
-                    const startTime = d.start_time ? formatTime12Hour(d.start_time.split('T')[1]) : "-";
-                    const endTime = d.end_time ? formatTime12Hour(d.end_time.split('T')[1]) : "-";
+                    const startTime = d.start_time ? formatTime24Hour(d.start_time.split('T')[1]) : "-";
+                    const endTime = d.end_time ? formatTime24Hour(d.end_time.split('T')[1]) : "-";
                     row.innerHTML = `
                         <td>${day}</td><td style="color:var(--primary); font-weight:600">${startTime}</td>
                         <td style="color:var(--purple); font-weight:600">${endTime}</td>
@@ -692,6 +738,8 @@
                         <td><small>${d.problem}</small></td><td><small>${d.root_cause}</small></td><td><small>${d.action}</small></td>
                         <td style="color:var(--danger); font-weight:800">${min}</td>
                         <td>${d.reason}</td><td><small>${d.tech_name}</small></td>
+                        <td>${photoCell(d.before_photo_url, 'Before')}</td>
+                        <td>${photoCell(d.after_photo_url, 'After')}</td>
                         <td>
                             <div style="display:flex; gap:8px;">
                                 <button onclick="openEdit('${d.id}')" style="color:var(--primary); cursor:pointer; background:none; border:none; font-weight:bold;">แก้ไข</button>
@@ -765,15 +813,30 @@
             });
         }
 
-        function formatTime12Hour(time) {
+        function formatTime24Hour(time) {
             if (!time) return "-";
             const [hours, minutes] = time.split(':').map(Number);
             if (Number.isNaN(hours) || Number.isNaN(minutes)) return time;
-
-            const period = hours >= 12 ? "PM" : "AM";
-            const displayHours = hours % 12 || 12;
-            return `${displayHours}:${String(minutes).padStart(2, '0')} ${period}`;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
         }
+
+        window.format24HourInput = (input) => {
+            const digits = input.value.replace(/\D/g, '').slice(0, 4);
+            input.value = digits.length > 2 ? `${digits.slice(0, 2)}:${digits.slice(2)}` : digits;
+        };
+
+        window.validate24HourInput = (input) => {
+            if (!input.value) return true;
+            const match = input.value.match(/^(\d{2}):(\d{2})$/);
+            const valid = match && Number(match[1]) <= 23 && Number(match[2]) <= 59;
+            if (!valid) {
+                alert('Please enter time in 24-hour format HH:MM, for example 07:30 or 18:45.');
+                input.value = "";
+                input.focus();
+                return false;
+            }
+            return true;
+        };
 
         function getShiftLabel(startTime) {
             const time = startTime?.split('T')[1];
@@ -798,8 +861,8 @@
             const depts = Object.keys(reasonMap);
             const hasBetweenShift = depts.some(dept => reasonMap[dept].between > 0);
             const datasets = [
-                { label: 'Day Shift 7:40 AM-7:50 PM', data: depts.map(dept => reasonMap[dept].day), backgroundColor: '#5c59e8', borderRadius: 6 },
-                { label: 'Night Shift 8:00 PM-7:20 AM', data: depts.map(dept => reasonMap[dept].night), backgroundColor: '#10b981', borderRadius: 6 }
+                { label: 'Day Shift 07:40-19:50', data: depts.map(dept => reasonMap[dept].day), backgroundColor: '#5c59e8', borderRadius: 6 },
+                { label: 'Night Shift 20:00-07:20', data: depts.map(dept => reasonMap[dept].night), backgroundColor: '#10b981', borderRadius: 6 }
             ];
 
             if (hasBetweenShift) {
@@ -859,7 +922,7 @@
         };
 
         window.saveAlertSettings = async () => {
-            if (!isAdmin()) return alert("เฉพาะ Admin เท่านั้นที่แก้ไข Alert ได้");
+            if (!isAdmin()) return alert("Only Admin can edit email alert settings.");
             const recipients = document.getElementById('alert-recipients').value
                 .split(/[\n,;]+/)
                 .map(email => email.trim())
@@ -871,12 +934,12 @@
                 sendTime,
                 updatedAt: serverTimestamp()
             }, { merge: true });
-            alert("บันทึกรายชื่อ Email Alert สำเร็จ");
+            alert("Email alert settings saved successfully.");
         };
 
         window.prepareDashboardSummaryEmail = () => {
             const recipients = alertSettings.recipients || [];
-            if (!recipients.length) return alert("กรุณาใส่ Email Recipients ก่อน");
+            if (!recipients.length) return alert("Please enter at least one email recipient.");
 
             const subject = `Dashboard Downtime Summary - ${getLocalDateValue()}`;
             const body = buildDashboardSummary(currentFilteredData, subject);
@@ -897,12 +960,16 @@
             const root = document.getElementById('root_cause').value;
             const action = document.getElementById('action').value;
             const owners = [document.getElementById('owner1').value, document.getElementById('owner2').value, document.getElementById('owner3').value].filter(x=>x).join(", ");
+            const beforeFile = document.getElementById('record_before_photo').files[0];
+            const afterFile = document.getElementById('record_after_photo').files[0];
             
-            if(!rDate || !line || !machine || !startTime || !endTime || !reason) return alert("กรุณากรอกข้อมูลที่จำเป็นให้ครบ");
+            if(!rDate || !line || !machine || !startTime || !endTime || !reason) return alert("Please complete all required fields.");
 
             try {
-                document.getElementById('btn-save-record').disabled = true;
-                await addDoc(collection(db, 'events'), {
+                const saveButton = document.getElementById('btn-save-record');
+                saveButton.disabled = true;
+                saveButton.textContent = (beforeFile || afterFile) ? 'SAVING & UPLOADING PICTURES...' : 'SAVING...';
+                const recordRef = await addDoc(collection(db, 'events'), {
                     line, machine, tech_name: owners,
                     reason, problem, root_cause: root, action,
                     start_time: `${rDate}T${startTime}`,
@@ -910,14 +977,45 @@
                     manual_min: parseInt(min),
                     createdAt: serverTimestamp()
                 });
-                alert("บันทึกสำเร็จ");
-                location.reload();
-            } catch (e) { alert("Error: " + e.message); }
+                const [beforeUrl, afterUrl] = await Promise.all([
+                    uploadRecordPhoto(recordRef.id, 'before', beforeFile),
+                    uploadRecordPhoto(recordRef.id, 'after', afterFile)
+                ]);
+                const photoChanges = {};
+                if (beforeUrl) photoChanges.before_photo_url = beforeUrl;
+                if (afterUrl) photoChanges.after_photo_url = afterUrl;
+                if (Object.keys(photoChanges).length) await updateDoc(recordRef, photoChanges);
+                resetRecordForm();
+                switchPage('history', document.getElementById('history-tab'));
+                alert("Record saved successfully.");
+            } catch (e) {
+                const saveButton = document.getElementById('btn-save-record');
+                saveButton.disabled = false;
+                saveButton.textContent = 'SAVE RECORD';
+                alert("Error: " + e.message);
+            }
         };
 
+        function resetRecordForm() {
+            ['start_time_only', 'end_time_only', 'owner1', 'owner2', 'owner3', 'problem', 'root_cause', 'action'].forEach(id => {
+                document.getElementById(id).value = "";
+            });
+            document.getElementById('manual_min').value = "0";
+            document.getElementById('line').value = "";
+            document.getElementById('reason').value = "";
+            updateMachineOptions();
+            document.getElementById('record_before_photo').value = "";
+            document.getElementById('record_after_photo').value = "";
+            document.getElementById('record_before_preview').innerHTML = '<span>No picture selected</span>';
+            document.getElementById('record_after_preview').innerHTML = '<span>No picture selected</span>';
+            const saveButton = document.getElementById('btn-save-record');
+            saveButton.disabled = false;
+            saveButton.textContent = 'SAVE RECORD';
+        }
+
         window.confirmDelete = async (id) => {
-            if(currentUser !== 'Admin') return alert("เฉพาะ Admin เท่านั้นที่ลบได้");
-            if(confirm("ยืนยันการลบข้อมูล?")) {
+            if(currentUser !== 'Admin') return alert("Only Admin can delete records.");
+            if(confirm("Are you sure you want to delete this record?")) {
                 await deleteDoc(doc(db, 'events', id));
             }
         };
@@ -939,12 +1037,118 @@
             runFilter();
         };
 
-        window.exportToExcel = () => {
-            const table = document.getElementById("main-table");
-            const ws = XLSX.utils.table_to_sheet(table);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Downtime_History");
-            XLSX.writeFile(wb, `Downtime_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
+        async function imageSourceToDataUrl(source) {
+            if (!source) return null;
+            if (source.startsWith('data:image/')) return source;
+            const response = await fetch(source);
+            if (!response.ok) throw new Error(`Picture download failed (${response.status})`);
+            return blobToDataUrl(await response.blob());
+        }
+
+        window.exportToExcel = async () => {
+            const button = document.getElementById('btn-export-excel');
+            if (typeof ExcelJS === 'undefined') {
+                alert('Excel image library could not be loaded. Please check the internet connection and refresh the page.');
+                return;
+            }
+
+            try {
+                button.disabled = true;
+                button.textContent = 'Preparing Excel & Pictures...';
+
+                const workbook = new ExcelJS.Workbook();
+                const sheet = workbook.addWorksheet('Downtime_History', {
+                    views: [{ state: 'frozen', ySplit: 1 }]
+                });
+                sheet.columns = [
+                    { header: 'Date', key: 'date', width: 14 },
+                    { header: 'Start', key: 'start', width: 12 },
+                    { header: 'End', key: 'end', width: 12 },
+                    { header: 'Line', key: 'line', width: 14 },
+                    { header: 'Machine', key: 'machine', width: 28 },
+                    { header: 'Problem', key: 'problem', width: 35 },
+                    { header: 'Cause', key: 'cause', width: 35 },
+                    { header: 'Action', key: 'action', width: 35 },
+                    { header: 'Min', key: 'minutes', width: 10 },
+                    { header: 'Dept', key: 'department', width: 16 },
+                    { header: 'Owner', key: 'owner', width: 24 },
+                    { header: 'Before Picture', key: 'before', width: 16 },
+                    { header: 'After Picture', key: 'after', width: 16 }
+                ];
+
+                const header = sheet.getRow(1);
+                header.height = 25;
+                header.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                header.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF5C59E8' } };
+                header.alignment = { vertical: 'middle', horizontal: 'center' };
+
+                for (const d of currentFilteredData) {
+                    const row = sheet.addRow({
+                        date: d.start_time?.split('T')[0] || '',
+                        start: d.start_time ? formatTime24Hour(d.start_time.split('T')[1]) : '',
+                        end: d.end_time ? formatTime24Hour(d.end_time.split('T')[1]) : '',
+                        line: d.line || '',
+                        machine: d.machine || '',
+                        problem: d.problem || '',
+                        cause: d.root_cause || '',
+                        action: d.action || '',
+                        minutes: parseInt(d.manual_min) || 0,
+                        department: d.reason || '',
+                        owner: d.tech_name || '',
+                        before: d.before_photo_url ? 'Picture' : 'No picture',
+                        after: d.after_photo_url ? 'Picture' : 'No picture'
+                    });
+                    row.height = (d.before_photo_url || d.after_photo_url) ? 58 : 22;
+                    row.alignment = { vertical: 'middle', wrapText: true };
+
+                    for (const [source, columnIndex] of [[d.before_photo_url, 11], [d.after_photo_url, 12]]) {
+                        if (!source) continue;
+                        try {
+                            const dataUrl = await imageSourceToDataUrl(source);
+                            const extension = dataUrl.startsWith('data:image/png') ? 'png' : 'jpeg';
+                            const imageId = workbook.addImage({ base64: dataUrl, extension });
+                            sheet.addImage(imageId, {
+                                tl: { col: columnIndex + 0.12, row: row.number - 0.88 },
+                                ext: { width: 88, height: 68 },
+                                editAs: 'oneCell'
+                            });
+                            row.getCell(columnIndex + 1).value = '';
+                        } catch (imageError) {
+                            console.warn('Could not add a picture to Excel.', imageError);
+                            row.getCell(columnIndex + 1).value = source.startsWith('http')
+                                ? { text: 'Open picture', hyperlink: source }
+                                : 'Picture unavailable';
+                        }
+                    }
+                }
+
+                sheet.autoFilter = { from: 'A1', to: 'M1' };
+                sheet.eachRow(row => {
+                    row.eachCell(cell => {
+                        cell.border = {
+                            top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+                            left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+                            bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+                            right: { style: 'thin', color: { argb: 'FFE2E8F0' } }
+                        };
+                    });
+                });
+
+                const buffer = await workbook.xlsx.writeBuffer();
+                const downloadUrl = URL.createObjectURL(new Blob([buffer], {
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                }));
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = `Downtime_Export_${new Date().toISOString().slice(0,10)}.xlsx`;
+                link.click();
+                setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+            } catch (error) {
+                alert('Excel export error: ' + error.message);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Export Excel';
+            }
         };
 
         window.openEdit = (id) => {
@@ -959,10 +1163,138 @@
             document.getElementById('edit_problem').value = d.problem;
             document.getElementById('edit_root').value = d.root_cause;
             document.getElementById('edit_action').value = d.action;
+            document.getElementById('edit_before_photo').value = "";
+            document.getElementById('edit_after_photo').value = "";
+            renderPhotoPreview('before', d.before_photo_url);
+            renderPhotoPreview('after', d.after_photo_url);
             document.getElementById('editModal').style.display = 'block';
         };
 
         window.closeEditModal = () => document.getElementById('editModal').style.display = 'none';
+
+        function renderPhotoPreview(type, url, selected = false) {
+            const preview = document.getElementById(`edit_${type}_preview`);
+            if (!url) {
+                preview.innerHTML = '<span>No picture attached</span>';
+                return;
+            }
+            preview.innerHTML = `<img src="${escapeHtml(url)}" alt="${type} picture"><span>${selected ? 'New picture selected' : 'Current picture'}</span>`;
+        }
+
+        window.previewSelectedPhoto = (type) => {
+            const input = document.getElementById(`edit_${type}_photo`);
+            const file = input.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file.');
+                input.value = "";
+                return;
+            }
+            renderPhotoPreview(type, URL.createObjectURL(file), true);
+        };
+
+        window.previewRecordPhoto = (type) => {
+            const input = document.getElementById(`record_${type}_photo`);
+            const preview = document.getElementById(`record_${type}_preview`);
+            const file = input.files[0];
+            if (!file) {
+                preview.innerHTML = '<span>No picture selected</span>';
+                return;
+            }
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file.');
+                input.value = "";
+                preview.innerHTML = '<span>No picture selected</span>';
+                return;
+            }
+            const objectUrl = URL.createObjectURL(file);
+            preview.innerHTML = `<img src="${escapeHtml(objectUrl)}" alt="${type} picture"><span>Picture selected</span>`;
+        };
+
+        function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                const objectUrl = URL.createObjectURL(file);
+                image.onload = () => {
+                    const scale = Math.min(1, 1600 / Math.max(image.width, image.height));
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.round(image.width * scale);
+                    canvas.height = Math.round(image.height * scale);
+                    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+                    URL.revokeObjectURL(objectUrl);
+                    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Could not process image.')), 'image/jpeg', 0.82);
+                };
+                image.onerror = () => {
+                    URL.revokeObjectURL(objectUrl);
+                    reject(new Error('Could not read image.'));
+                };
+                image.src = objectUrl;
+            });
+        }
+
+        function blobToDataUrl(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('Could not convert picture for saving.'));
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        async function createFirestorePhoto(file) {
+            const image = new Image();
+            const sourceUrl = URL.createObjectURL(file);
+            try {
+                await new Promise((resolve, reject) => {
+                    image.onload = resolve;
+                    image.onerror = () => reject(new Error('Could not prepare picture for saving.'));
+                    image.src = sourceUrl;
+                });
+                const canvas = document.createElement('canvas');
+                const scale = Math.min(1, 900 / Math.max(image.width, image.height));
+                canvas.width = Math.round(image.width * scale);
+                canvas.height = Math.round(image.height * scale);
+                canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+
+                let quality = 0.68;
+                let blob;
+                do {
+                    blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+                    quality -= 0.08;
+                } while (blob && blob.size > 260000 && quality >= 0.28);
+
+                if (!blob) throw new Error('Could not compress picture.');
+                if (blob.size > 320000) throw new Error('Picture is too large. Please select a smaller picture.');
+                return blobToDataUrl(blob);
+            } finally {
+                URL.revokeObjectURL(sourceUrl);
+            }
+        }
+
+        function withTimeout(promise, milliseconds) {
+            return Promise.race([
+                promise,
+                new Promise((_, reject) => setTimeout(
+                    () => reject(Object.assign(new Error('Firebase Storage upload timed out.'), { code: 'storage/timeout' })),
+                    milliseconds
+                ))
+            ]);
+        }
+
+        async function uploadRecordPhoto(recordId, type, file) {
+            if (!file) return null;
+            return createFirestorePhoto(file);
+        }
+
+        window.openImageModal = (encodedUrl) => {
+            document.getElementById('imageModalPhoto').src = decodeURIComponent(encodedUrl);
+            document.getElementById('imageModal').style.display = 'block';
+        };
+
+        window.closeImageModal = () => {
+            document.getElementById('imageModal').style.display = 'none';
+            document.getElementById('imageModalPhoto').src = "";
+        };
 
         window.autoCalcEditTime = () => {
             const start = document.getElementById('edit_start').value;
@@ -993,7 +1325,46 @@
                 action: document.getElementById('edit_action').value
             });
             closeEditModal();
-            alert("แก้ไขข้อมูลสำเร็จ");
+            alert("Record updated successfully.");
+        };
+
+        window.saveEditWithPhotos = async () => {
+            const id = document.getElementById('edit_id').value;
+            const date = document.getElementById('edit_date').value;
+            const start = document.getElementById('edit_start').value;
+            const end = document.getElementById('edit_end').value;
+            const min = document.getElementById('edit_min').value;
+            const beforeFile = document.getElementById('edit_before_photo').files[0];
+            const afterFile = document.getElementById('edit_after_photo').files[0];
+            const saveButton = document.getElementById('btn-save-edit');
+
+            try {
+                saveButton.disabled = true;
+                saveButton.textContent = (beforeFile || afterFile) ? 'UPLOADING PICTURES...' : 'UPDATING...';
+                const [beforeUrl, afterUrl] = await Promise.all([
+                    uploadRecordPhoto(id, 'before', beforeFile),
+                    uploadRecordPhoto(id, 'after', afterFile)
+                ]);
+                const changes = {
+                    start_time: `${date}T${start}`,
+                    end_time: `${date}T${end}`,
+                    manual_min: parseInt(min),
+                    reason: document.getElementById('edit_reason').value,
+                    problem: document.getElementById('edit_problem').value,
+                    root_cause: document.getElementById('edit_root').value,
+                    action: document.getElementById('edit_action').value
+                };
+                if (beforeUrl) changes.before_photo_url = beforeUrl;
+                if (afterUrl) changes.after_photo_url = afterUrl;
+                await updateDoc(doc(db, 'events', id), changes);
+                closeEditModal();
+                alert("Record updated successfully.");
+            } catch (e) {
+                alert("Update error: " + e.message);
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = 'UPDATE DATA';
+            }
         };
 
     </script>
