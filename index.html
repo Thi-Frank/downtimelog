@@ -34,6 +34,15 @@
         .stat-box:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
         .stat-label { font-size: 0.7rem; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin-bottom: 8px; }
         .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--text-main); }
+        .status-summary { margin-bottom: 1.5rem; }
+        .status-summary-grid { display: grid; grid-template-columns: repeat(3, minmax(170px, 1fr)); gap: 1rem; }
+        .status-summary-item { border: 1px solid var(--border); border-radius: 18px; padding: 1.15rem; background: var(--bg); }
+        .status-summary-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 0.75rem; }
+        .status-summary-label { font-size: 0.82rem; font-weight: 800; }
+        .status-summary-value { font-size: 1.65rem; font-weight: 800; }
+        .status-summary-percent { color: var(--text-sub); font-size: 0.78rem; font-weight: 700; }
+        .status-progress { height: 8px; overflow: hidden; border-radius: 999px; background: var(--border); }
+        .status-progress-fill { height: 100%; border-radius: inherit; transition: width 0.25s ease; }
 
         .charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 1.8rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
@@ -54,7 +63,19 @@
         .btn-small { width: auto; margin-top: 0; padding: 0.9rem 1.2rem; }
 
         .filter-bar { background: white; padding: 1.5rem; border-radius: 24px; margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; border: 1px solid var(--border); align-items: end; }
-        .table-container { overflow-x: auto; }
+        .table-container { width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-gutter: stable; }
+        .table-container::-webkit-scrollbar { height: 12px; }
+        .table-container::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 999px; border: 3px solid var(--card); }
+        .pagination-bar { margin-top: 1rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+        .pagination-info { color: var(--text-sub); font-size: 0.85rem; font-weight: 600; }
+        .pagination-size { display: flex; align-items: center; gap: 8px; }
+        .pagination-size label { margin: 0; white-space: nowrap; }
+        .pagination-size select { width: auto; min-width: 76px; padding: 0.65rem 0.8rem; }
+        .pagination-pages { display: flex; flex-wrap: wrap; gap: 6px; }
+        .page-button { min-width: 38px; height: 38px; padding: 0 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); color: var(--text-main); cursor: pointer; font-weight: 700; }
+        .page-button.active { background: var(--primary); border-color: var(--primary); color: white; }
+        .page-button:disabled { opacity: 0.45; cursor: not-allowed; }
+        .page-ellipsis { min-width: 28px; display: grid; place-items: center; color: var(--text-sub); }
         table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1500px; }
         th { text-align: left; padding: 1.2rem; font-size: 0.75rem; color: var(--text-sub); background: #f8fafc; border-bottom: 2px solid var(--border); font-weight: 800; }
         td { padding: 1.2rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; vertical-align: top; }
@@ -78,10 +99,14 @@
         .top-meta { color: var(--danger); font-weight: 800; white-space: nowrap; }
         .empty-state { color: var(--text-sub); font-size: 0.9rem; padding: 1rem; background: #f8fafc; border: 1px dashed var(--border); border-radius: 14px; }
         .photo-upload { border: 1.5px dashed var(--border); border-radius: 16px; padding: 1rem; background: #f8fafc; }
-        .photo-preview { margin-top: 0.8rem; min-height: 72px; display: flex; align-items: center; gap: 10px; color: var(--text-sub); font-size: 0.8rem; }
+        .photo-preview { margin-top: 0.8rem; min-height: 72px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; color: var(--text-sub); font-size: 0.8rem; }
         .photo-preview img, .history-photo { width: 76px; height: 64px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); background: white; cursor: pointer; }
         .history-photo:hover { border-color: var(--primary); transform: scale(1.04); }
         .photo-placeholder { color: #94a3b8; font-size: 0.78rem; white-space: nowrap; }
+        .status-select { min-width: 108px; padding: 7px 9px; border-radius: 999px; border: 1px solid var(--border); font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+        .status-follow-up { color: #b45309; background: #fffbeb; }
+        .status-in-progress { color: #1d4ed8; background: #eff6ff; }
+        .status-solved { color: #15803d; background: #f0fdf4; }
         .image-modal-content { margin: 3vh auto; padding: 1rem; width: min(94vw, 1100px); height: 94vh; max-height: 94vh; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
         .image-modal-content img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 14px; }
         .theme-toggle { background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe; padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:700; }
@@ -103,6 +128,7 @@
         @media (max-width: 900px) {
             .charts-grid, .settings-grid { grid-template-columns: 1fr; }
             .card-full { grid-column: span 1; }
+            .status-summary-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -159,6 +185,27 @@
                 <div class="stat-box"><div class="stat-label">Critical Line</div><div class="stat-value" id="worst-line" style="color:var(--danger); font-size:1.5rem;">-</div></div>
             </div>
 
+            <div class="card status-summary">
+                <div class="card-title">Issue Status Summary</div>
+                <div class="status-summary-grid">
+                    <div class="status-summary-item">
+                        <div class="status-summary-head"><span class="status-summary-label" style="color:#b45309">Follow up</span><span class="status-summary-value" id="status-follow-up-count">0</span></div>
+                        <div class="status-progress"><div class="status-progress-fill" id="status-follow-up-bar" style="width:0; background:#f59e0b"></div></div>
+                        <div class="status-summary-percent" id="status-follow-up-percent">0% of issues</div>
+                    </div>
+                    <div class="status-summary-item">
+                        <div class="status-summary-head"><span class="status-summary-label" style="color:#1d4ed8">In progress</span><span class="status-summary-value" id="status-in-progress-count">0</span></div>
+                        <div class="status-progress"><div class="status-progress-fill" id="status-in-progress-bar" style="width:0; background:#3b82f6"></div></div>
+                        <div class="status-summary-percent" id="status-in-progress-percent">0% of issues</div>
+                    </div>
+                    <div class="status-summary-item">
+                        <div class="status-summary-head"><span class="status-summary-label" style="color:#15803d">Solved</span><span class="status-summary-value" id="status-solved-count">0</span></div>
+                        <div class="status-progress"><div class="status-progress-fill" id="status-solved-bar" style="width:0; background:#22c55e"></div></div>
+                        <div class="status-summary-percent" id="status-solved-percent">0% of issues</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="charts-grid">
                 <div class="card"><div class="card-title">Total Loss Time by Line (Minutes)</div><div class="chart-box"><canvas id="lineLossChart"></canvas></div></div>
                 <div class="card"><div class="card-title">Total Loss Time by Machine (Minutes)</div><div class="chart-box"><canvas id="machineChart"></canvas></div></div>
@@ -193,16 +240,19 @@
                     <div><label>Problem</label><textarea id="problem" rows="2"></textarea></div>
                     <div><label>Root Cause</label><textarea id="root_cause" rows="2"></textarea></div>
                 </div>
-                <div style="margin-bottom:1rem"><label>Action</label><textarea id="action" rows="2"></textarea></div>
+                <div class="form-row">
+                    <div><label>Action short term</label><textarea id="action_short_term" rows="2"></textarea></div>
+                    <div><label>Action long term</label><textarea id="action_long_term" rows="2"></textarea></div>
+                </div>
                 <div class="form-row">
                     <div class="photo-upload">
-                        <label>Before Picture</label>
-                        <input type="file" id="record_before_photo" accept="image/*" onchange="previewRecordPhoto('before')">
+                        <label>Before Pictures (maximum 2)</label>
+                        <input type="file" id="record_before_photo" accept="image/*" multiple onchange="previewRecordPhoto('before')">
                         <div id="record_before_preview" class="photo-preview"><span>No picture selected</span></div>
                     </div>
                     <div class="photo-upload">
-                        <label>After Picture</label>
-                        <input type="file" id="record_after_photo" accept="image/*" onchange="previewRecordPhoto('after')">
+                        <label>After Pictures (maximum 2)</label>
+                        <input type="file" id="record_after_photo" accept="image/*" multiple onchange="previewRecordPhoto('after')">
                         <div id="record_after_preview" class="photo-preview"><span>No picture selected</span></div>
                     </div>
                 </div>
@@ -233,17 +283,31 @@
                             <th>Machine</th>
                             <th>Problem</th>
                             <th>Cause</th>
-                            <th>Action</th>
+                            <th>Action short term</th>
+                            <th>Action long term</th>
                             <th>Min</th>
                             <th>Dept</th>
                             <th>Owner</th>
                             <th>Before</th>
                             <th>After</th>
+                            <th>Status</th>
                             <th>Manage</th>
                         </tr>
                     </thead>
                     <tbody id="history-body"></tbody>
                 </table>
+            </div>
+            <div class="pagination-bar">
+                <div class="pagination-size">
+                    <label for="history-page-size">Show</label>
+                    <select id="history-page-size" onchange="changeHistoryPageSize(this.value)">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                    </select>
+                    <span class="pagination-info">records per page</span>
+                </div>
+                <div id="history-page-info" class="pagination-info"></div>
+                <div id="history-pagination" class="pagination-pages" aria-label="History pages"></div>
             </div>
         </div>
 
@@ -303,7 +367,8 @@
                 <div class="form-row">
                     <div><label>Problem</label><textarea id="edit_problem" rows="2"></textarea></div>
                     <div><label>Root Cause</label><textarea id="edit_root" rows="2"></textarea></div>
-                    <div><label>Action</label><textarea id="edit_action" rows="2"></textarea></div>
+                    <div><label>Action short term</label><textarea id="edit_action_short_term" rows="2"></textarea></div>
+                    <div><label>Action long term</label><textarea id="edit_action_long_term" rows="2"></textarea></div>
                 </div>
                 <div class="form-row">
                     <div>
@@ -316,13 +381,13 @@
                 </div>
                 <div class="form-row">
                     <div class="photo-upload">
-                        <label>Before Picture</label>
-                        <input type="file" id="edit_before_photo" accept="image/*" onchange="previewSelectedPhoto('before')">
+                        <label>Before Pictures (maximum 2 total)</label>
+                        <input type="file" id="edit_before_photo" accept="image/*" multiple onchange="previewSelectedPhoto('before')">
                         <div id="edit_before_preview" class="photo-preview"><span>No picture attached</span></div>
                     </div>
                     <div class="photo-upload">
-                        <label>After Picture</label>
-                        <input type="file" id="edit_after_photo" accept="image/*" onchange="previewSelectedPhoto('after')">
+                        <label>After Pictures (maximum 2 total)</label>
+                        <input type="file" id="edit_after_photo" accept="image/*" multiple onchange="previewSelectedPhoto('after')">
                         <div id="edit_after_preview" class="photo-preview"><span>No picture attached</span></div>
                     </div>
                 </div>
@@ -344,7 +409,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc, updateDoc, setDoc, getDocs, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyB5Y953TTOoguUdUJItUgnJVb6X0zas9eM", 
@@ -356,8 +420,12 @@
         
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const storage = getStorage(app);
         let charts = {}, rawData = [], currentFilteredData = [], currentUser = null, productionSettings = [], alertSettings = { recipients: ["thithamm@deltaww.com"], sendTime: "07:30" };
+        let editingPhotoUrls = { before: [], after: [] };
+        const MAX_PHOTOS_PER_SECTION = 2;
+        let historyPage = 1;
+        let historyPageSize = 10;
+        let lastHistoryFilterSignature = '';
 
         function applyTheme(theme) {
             const selected = theme === 'dark' ? 'dark' : 'light';
@@ -426,9 +494,28 @@
         const escapeHtml = (value = "") => String(value).replace(/[&<>"']/g, ch => ({
             "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
         }[ch]));
-        const photoCell = (url, label) => url
-            ? `<img class="history-photo" src="${escapeHtml(url)}" alt="${label} picture" loading="lazy" onclick="openImageModal('${encodeURIComponent(url)}')">`
-            : '<span class="photo-placeholder">No picture</span>';
+        const getPhotoUrls = (record, type) => {
+            const urls = record?.[`${type}_photo_urls`];
+            if (Array.isArray(urls)) return urls.filter(Boolean);
+            const legacyUrl = record?.[`${type}_photo_url`];
+            return legacyUrl ? [legacyUrl] : [];
+        };
+        const photoCell = (urls, label) => {
+            const list = Array.isArray(urls) ? urls : (urls ? [urls] : []);
+            return list.length
+                ? list.map((url, index) => `<img class="history-photo" src="${escapeHtml(url)}" alt="${label} picture ${index + 1}" loading="lazy" onclick="openImageModal('${encodeURIComponent(url)}')">`).join(' ')
+                : '<span class="photo-placeholder">No picture</span>';
+        };
+        const issueStatuses = ['Follow up', 'In progress', 'Solved'];
+        const normalizeStatus = status => issueStatuses.includes(status) ? status : 'Follow up';
+        const statusClass = status => `status-${normalizeStatus(status).toLowerCase().replace(/\s+/g, '-')}`;
+        const statusSelect = record => {
+            const currentStatus = normalizeStatus(record.status);
+            const options = issueStatuses.map(status =>
+                `<option value="${status}"${status === currentStatus ? ' selected' : ''}>${status}</option>`
+            ).join('');
+            return `<select class="status-select ${statusClass(currentStatus)}" aria-label="Issue status" onchange="updateIssueStatus('${record.id}', this)">${options}</select>`;
+        };
 
         function setSelectOptions(selectId, placeholderText, names) {
             const select = document.getElementById(selectId);
@@ -767,6 +854,13 @@
         const fTimeS = pageId==='page-history' ? document.getElementById('f-time-start').value : "";
         const fTimeE = pageId==='page-history' ? document.getElementById('f-time-end').value : "";
         const fM = pageId==='page-history' ? document.getElementById('f-machine').value.toLowerCase() : "";
+        if (pageId === 'page-history') {
+            const filterSignature = JSON.stringify([fS, fE, fL, fTimeS, fTimeE, fM]);
+            if (filterSignature !== lastHistoryFilterSignature) {
+                historyPage = 1;
+                lastHistoryFilterSignature = filterSignature;
+            }
+        }
 
         const filterStartFull = (fS && fTimeS) ? `${fS}T${fTimeS}` : (fS ? `${fS}T00:00` : null);
         const filterEndFull = (fE && fTimeE) ? `${fE}T${fTimeE}` : (fE ? `${fE}T23:59` : null);
@@ -793,12 +887,17 @@
 };
         function updateUI(data) {
             currentFilteredData = data;
+            const totalHistoryPages = Math.max(1, Math.ceil(data.length / historyPageSize));
+            historyPage = Math.min(Math.max(1, historyPage), totalHistoryPages);
+            const historyStartIndex = (historyPage - 1) * historyPageSize;
+            const historyEndIndex = historyStartIndex + historyPageSize;
             let totalMin = 0;
             const reasonMap = {}, machineMap = {}, trendMap = {}, lineMap = {}, problemMap = {}, rootCauseMap = {};
+            const statusMap = { 'Follow up': 0, 'In progress': 0, 'Solved': 0 };
             const tbody = document.getElementById('history-body'); 
             if(tbody) tbody.innerHTML = "";
 
-            data.forEach(d => {
+            data.forEach((d, dataIndex) => {
                 const min = parseInt(d.manual_min) || 0;
                 totalMin += min;
                 const dept = d.reason || "Unknown";
@@ -813,11 +912,12 @@
                 const rootCause = (d.root_cause || "").trim();
                 if (problem) problemMap[problem] = (problemMap[problem] || 0) + min;
                 if (rootCause) rootCauseMap[rootCause] = (rootCauseMap[rootCause] || 0) + min;
+                statusMap[normalizeStatus(d.status)] += 1;
 
                 const day = d.start_time?.split('T')[0];
                 if(day) trendMap[day] = (trendMap[day]||0) + min;
 
-                if (tbody) {
+                if (tbody && dataIndex >= historyStartIndex && dataIndex < historyEndIndex) {
                     const row = document.createElement('tr');
                     const startTime = d.start_time ? formatTime24Hour(d.start_time.split('T')[1]) : "-";
                     const endTime = d.end_time ? formatTime24Hour(d.end_time.split('T')[1]) : "-";
@@ -825,11 +925,14 @@
                         <td>${day}</td><td style="color:var(--primary); font-weight:600">${startTime}</td>
                         <td style="color:var(--purple); font-weight:600">${endTime}</td>
                         <td><b>${d.line}</b></td><td>${d.machine}</td>
-                        <td><small>${d.problem}</small></td><td><small>${d.root_cause}</small></td><td><small>${d.action}</small></td>
+                        <td><small>${d.problem}</small></td><td><small>${d.root_cause}</small></td>
+                        <td><small>${d.action_short_term ?? d.action ?? ''}</small></td>
+                        <td><small>${d.action_long_term ?? ''}</small></td>
                         <td style="color:var(--danger); font-weight:800">${min}</td>
                         <td>${d.reason}</td><td><small>${d.tech_name}</small></td>
-                        <td>${photoCell(d.before_photo_url, 'Before')}</td>
-                        <td>${photoCell(d.after_photo_url, 'After')}</td>
+                        <td>${photoCell(getPhotoUrls(d, 'before'), 'Before')}</td>
+                        <td>${photoCell(getPhotoUrls(d, 'after'), 'After')}</td>
+                        <td>${statusSelect(d)}</td>
                         <td>
                             <div style="display:flex; gap:8px;">
                                 <button onclick="openEdit('${d.id}')" style="color:var(--primary); cursor:pointer; background:none; border:none; font-weight:bold;">แก้ไข</button>
@@ -840,6 +943,7 @@
                     tbody.appendChild(row);
                 }
             });
+            renderHistoryPagination(data.length, totalHistoryPages);
 
             document.getElementById('sum-minutes').textContent = totalMin.toLocaleString();
             document.getElementById('sum-events').textContent = data.length;
@@ -852,6 +956,65 @@
             renderTopList('top-problems', problemMap);
             renderTopList('top-root-causes', rootCauseMap);
             renderMachineChart(machineMap);
+            renderStatusSummary(statusMap, data.length);
+        }
+
+        function renderHistoryPagination(totalRecords, totalPages) {
+            const info = document.getElementById('history-page-info');
+            const pagination = document.getElementById('history-pagination');
+            if (!info || !pagination) return;
+
+            const firstRecord = totalRecords ? ((historyPage - 1) * historyPageSize) + 1 : 0;
+            const lastRecord = Math.min(historyPage * historyPageSize, totalRecords);
+            info.textContent = `Showing ${firstRecord}-${lastRecord} of ${totalRecords}`;
+
+            const visiblePages = new Set([1, totalPages]);
+            for (let page = Math.max(1, historyPage - 2); page <= Math.min(totalPages, historyPage + 2); page++) {
+                visiblePages.add(page);
+            }
+            const sortedPages = [...visiblePages].sort((a, b) => a - b);
+            let previousPage = 0;
+            const pageButtons = sortedPages.map(page => {
+                const ellipsis = previousPage && page - previousPage > 1
+                    ? '<span class="page-ellipsis">…</span>'
+                    : '';
+                previousPage = page;
+                return `${ellipsis}<button class="page-button${page === historyPage ? ' active' : ''}" onclick="goToHistoryPage(${page})" aria-label="Page ${page}"${page === historyPage ? ' aria-current="page"' : ''}>${page}</button>`;
+            }).join('');
+
+            pagination.innerHTML = `
+                <button class="page-button" onclick="goToHistoryPage(${historyPage - 1})" ${historyPage === 1 ? 'disabled' : ''} aria-label="Previous page">‹</button>
+                ${pageButtons}
+                <button class="page-button" onclick="goToHistoryPage(${historyPage + 1})" ${historyPage === totalPages ? 'disabled' : ''} aria-label="Next page">›</button>
+            `;
+        }
+
+        window.goToHistoryPage = page => {
+            const totalPages = Math.max(1, Math.ceil(currentFilteredData.length / historyPageSize));
+            historyPage = Math.min(Math.max(1, Number(page) || 1), totalPages);
+            updateUI(currentFilteredData);
+            document.querySelector('#page-history .table-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        window.changeHistoryPageSize = value => {
+            historyPageSize = Number(value) === 20 ? 20 : 10;
+            historyPage = 1;
+            updateUI(currentFilteredData);
+        };
+
+        function renderStatusSummary(statusMap, totalIssues) {
+            const statusElements = {
+                'Follow up': 'follow-up',
+                'In progress': 'in-progress',
+                'Solved': 'solved'
+            };
+            Object.entries(statusElements).forEach(([status, elementKey]) => {
+                const count = statusMap[status] || 0;
+                const percent = totalIssues ? (count / totalIssues) * 100 : 0;
+                document.getElementById(`status-${elementKey}-count`).textContent = count.toLocaleString();
+                document.getElementById(`status-${elementKey}-bar`).style.width = `${percent}%`;
+                document.getElementById(`status-${elementKey}-percent`).textContent = `${percent.toFixed(1)}% of issues`;
+            });
         }
 
         function renderTopList(elementId, valueMap) {
@@ -1048,33 +1211,37 @@
             const reason = document.getElementById('reason').value;
             const problem = document.getElementById('problem').value;
             const root = document.getElementById('root_cause').value;
-            const action = document.getElementById('action').value;
+            const actionShortTerm = document.getElementById('action_short_term').value;
+            const actionLongTerm = document.getElementById('action_long_term').value;
             const owners = [document.getElementById('owner1').value, document.getElementById('owner2').value, document.getElementById('owner3').value].filter(x=>x).join(", ");
-            const beforeFile = document.getElementById('record_before_photo').files[0];
-            const afterFile = document.getElementById('record_after_photo').files[0];
+            const beforeFiles = Array.from(document.getElementById('record_before_photo').files);
+            const afterFiles = Array.from(document.getElementById('record_after_photo').files);
             
             if(!rDate || !line || !machine || !startTime || !endTime || !reason) return alert("Please complete all required fields.");
+            if (beforeFiles.length > MAX_PHOTOS_PER_SECTION || afterFiles.length > MAX_PHOTOS_PER_SECTION) return alert("Please select no more than 2 pictures in each section.");
 
             try {
                 const saveButton = document.getElementById('btn-save-record');
                 saveButton.disabled = true;
-                saveButton.textContent = (beforeFile || afterFile) ? 'SAVING & UPLOADING PICTURES...' : 'SAVING...';
-                const recordRef = await addDoc(collection(db, 'events'), {
+                saveButton.textContent = (beforeFiles.length || afterFiles.length) ? 'SAVING & UPLOADING PICTURES...' : 'SAVING...';
+                const recordRef = doc(collection(db, 'events'));
+                const [beforeUrls, afterUrls] = await Promise.all([
+                    uploadRecordPhotos(recordRef.id, 'before', beforeFiles),
+                    uploadRecordPhotos(recordRef.id, 'after', afterFiles)
+                ]);
+                await setDoc(recordRef, {
                     line, machine, tech_name: owners,
-                    reason, problem, root_cause: root, action,
+                    reason, problem, root_cause: root,
+                    action_short_term: actionShortTerm,
+                    action_long_term: actionLongTerm,
+                    status: 'Follow up',
                     start_time: `${rDate}T${startTime}`,
                     end_time: `${rDate}T${endTime}`,
                     manual_min: parseInt(min),
+                    before_photo_urls: beforeUrls,
+                    after_photo_urls: afterUrls,
                     createdAt: serverTimestamp()
                 });
-                const [beforeUrl, afterUrl] = await Promise.all([
-                    uploadRecordPhoto(recordRef.id, 'before', beforeFile),
-                    uploadRecordPhoto(recordRef.id, 'after', afterFile)
-                ]);
-                const photoChanges = {};
-                if (beforeUrl) photoChanges.before_photo_url = beforeUrl;
-                if (afterUrl) photoChanges.after_photo_url = afterUrl;
-                if (Object.keys(photoChanges).length) await updateDoc(recordRef, photoChanges);
                 resetRecordForm();
                 alert("Record saved successfully.");
             } catch (e) {
@@ -1086,7 +1253,7 @@
         };
 
         function resetRecordForm() {
-            ['start_time_only', 'end_time_only', 'owner1', 'owner2', 'owner3', 'problem', 'root_cause', 'action'].forEach(id => {
+            ['start_time_only', 'end_time_only', 'owner1', 'owner2', 'owner3', 'problem', 'root_cause', 'action_short_term', 'action_long_term'].forEach(id => {
                 document.getElementById(id).value = "";
             });
             document.getElementById('manual_min').value = "0";
@@ -1107,6 +1274,27 @@
             if(await showConfirm("Are you sure you want to delete this record?")) {
                 await deleteDoc(doc(db, 'events', id));
                 showToast("Record deleted successfully.");
+            }
+        };
+
+        window.updateIssueStatus = async (id, select) => {
+            const record = rawData.find(item => item.id === id);
+            const previousStatus = normalizeStatus(record?.status);
+            const nextStatus = normalizeStatus(select.value);
+            select.disabled = true;
+            select.className = `status-select ${statusClass(nextStatus)}`;
+            try {
+                await updateDoc(doc(db, 'events', id), {
+                    status: nextStatus,
+                    status_updated_at: serverTimestamp()
+                });
+                showToast(`Status updated to ${nextStatus}.`);
+            } catch (error) {
+                select.value = previousStatus;
+                select.className = `status-select ${statusClass(previousStatus)}`;
+                alert(`Could not update status: ${error.message}`);
+            } finally {
+                select.disabled = false;
             }
         };
 
@@ -1158,10 +1346,12 @@
                     { header: 'Machine', key: 'machine', width: 28 },
                     { header: 'Problem', key: 'problem', width: 35 },
                     { header: 'Cause', key: 'cause', width: 35 },
-                    { header: 'Action', key: 'action', width: 35 },
+                    { header: 'Action short term', key: 'actionShortTerm', width: 35 },
+                    { header: 'Action long term', key: 'actionLongTerm', width: 35 },
                     { header: 'Min', key: 'minutes', width: 10 },
                     { header: 'Dept', key: 'department', width: 16 },
                     { header: 'Owner', key: 'owner', width: 24 },
+                    { header: 'Status', key: 'status', width: 16 },
                     { header: 'Before Picture', key: 'before', width: 16 },
                     { header: 'After Picture', key: 'after', width: 16 }
                 ];
@@ -1181,38 +1371,41 @@
                         machine: d.machine || '',
                         problem: d.problem || '',
                         cause: d.root_cause || '',
-                        action: d.action || '',
+                        actionShortTerm: d.action_short_term ?? d.action ?? '',
+                        actionLongTerm: d.action_long_term || '',
                         minutes: parseInt(d.manual_min) || 0,
                         department: d.reason || '',
                         owner: d.tech_name || '',
-                        before: d.before_photo_url ? 'Picture' : 'No picture',
-                        after: d.after_photo_url ? 'Picture' : 'No picture'
+                        status: normalizeStatus(d.status),
+                        before: getPhotoUrls(d, 'before').length ? `${getPhotoUrls(d, 'before').length} picture(s)` : 'No picture',
+                        after: getPhotoUrls(d, 'after').length ? `${getPhotoUrls(d, 'after').length} picture(s)` : 'No picture'
                     });
-                    row.height = (d.before_photo_url || d.after_photo_url) ? 58 : 22;
+                    const beforePhotos = getPhotoUrls(d, 'before');
+                    const afterPhotos = getPhotoUrls(d, 'after');
+                    row.height = (beforePhotos.length || afterPhotos.length) ? 58 : 22;
                     row.alignment = { vertical: 'middle', wrapText: true };
 
-                    for (const [source, columnIndex] of [[d.before_photo_url, 11], [d.after_photo_url, 12]]) {
-                        if (!source) continue;
-                        try {
-                            const dataUrl = await imageSourceToDataUrl(source);
-                            const extension = dataUrl.startsWith('data:image/png') ? 'png' : 'jpeg';
-                            const imageId = workbook.addImage({ base64: dataUrl, extension });
-                            sheet.addImage(imageId, {
-                                tl: { col: columnIndex + 0.12, row: row.number - 0.88 },
-                                ext: { width: 88, height: 68 },
-                                editAs: 'oneCell'
-                            });
-                            row.getCell(columnIndex + 1).value = '';
-                        } catch (imageError) {
-                            console.warn('Could not add a picture to Excel.', imageError);
-                            row.getCell(columnIndex + 1).value = source.startsWith('http')
-                                ? { text: 'Open picture', hyperlink: source }
-                                : 'Picture unavailable';
+                    for (const [sources, columnIndex] of [[beforePhotos, 13], [afterPhotos, 14]]) {
+                        for (let imageIndex = 0; imageIndex < sources.length; imageIndex++) {
+                            const source = sources[imageIndex];
+                            try {
+                                const dataUrl = await imageSourceToDataUrl(source);
+                                const extension = dataUrl.startsWith('data:image/png') ? 'png' : 'jpeg';
+                                const imageId = workbook.addImage({ base64: dataUrl, extension });
+                                sheet.addImage(imageId, {
+                                    tl: { col: columnIndex + 0.04 + (imageIndex * 0.31), row: row.number - 0.88 },
+                                    ext: { width: 42, height: 58 },
+                                    editAs: 'oneCell'
+                                });
+                                row.getCell(columnIndex + 1).value = '';
+                            } catch (imageError) {
+                                console.warn('Could not add a picture to Excel.', imageError);
+                            }
                         }
                     }
                 }
 
-                sheet.autoFilter = { from: 'A1', to: 'M1' };
+                sheet.autoFilter = { from: 'A1', to: 'O1' };
                 sheet.eachRow(row => {
                     row.eachCell(cell => {
                         cell.border = {
@@ -1252,53 +1445,70 @@
             document.getElementById('edit_reason').value = d.reason;
             document.getElementById('edit_problem').value = d.problem;
             document.getElementById('edit_root').value = d.root_cause;
-            document.getElementById('edit_action').value = d.action;
+            document.getElementById('edit_action_short_term').value = d.action_short_term ?? d.action ?? '';
+            document.getElementById('edit_action_long_term').value = d.action_long_term ?? '';
             document.getElementById('edit_before_photo').value = "";
             document.getElementById('edit_after_photo').value = "";
-            renderPhotoPreview('before', d.before_photo_url);
-            renderPhotoPreview('after', d.after_photo_url);
+            editingPhotoUrls = { before: getPhotoUrls(d, 'before'), after: getPhotoUrls(d, 'after') };
+            renderPhotoPreview('before', editingPhotoUrls.before);
+            renderPhotoPreview('after', editingPhotoUrls.after);
             document.getElementById('editModal').style.display = 'block';
         };
 
         window.closeEditModal = () => document.getElementById('editModal').style.display = 'none';
 
-        function renderPhotoPreview(type, url, selected = false) {
+        function renderPhotoPreview(type, urls, selected = false) {
             const preview = document.getElementById(`edit_${type}_preview`);
-            if (!url) {
+            const list = Array.isArray(urls) ? urls : (urls ? [urls] : []);
+            if (!list.length) {
                 preview.innerHTML = '<span>No picture attached</span>';
                 return;
             }
-            preview.innerHTML = `<img src="${escapeHtml(url)}" alt="${type} picture"><span>${selected ? 'New picture selected' : 'Current picture'}</span>`;
+            preview.innerHTML = list.map((url, index) =>
+                `<img src="${escapeHtml(url)}" alt="${type} picture ${index + 1}">`
+            ).join('') + `<span>${list.length} ${selected ? 'new' : 'current'} picture(s)</span>`;
         }
 
         window.previewSelectedPhoto = (type) => {
             const input = document.getElementById(`edit_${type}_photo`);
-            const file = input.files[0];
-            if (!file) return;
-            if (!file.type.startsWith('image/')) {
+            const files = Array.from(input.files);
+            if (!files.length) return renderPhotoPreview(type, editingPhotoUrls[type]);
+            if (editingPhotoUrls[type].length + files.length > MAX_PHOTOS_PER_SECTION) {
+                alert(`You can add only ${Math.max(0, MAX_PHOTOS_PER_SECTION - editingPhotoUrls[type].length)} more picture(s).`);
+                input.value = "";
+                return renderPhotoPreview(type, editingPhotoUrls[type]);
+            }
+            if (files.some(file => !file.type.startsWith('image/'))) {
                 alert('Please select an image file.');
                 input.value = "";
                 return;
             }
-            renderPhotoPreview(type, URL.createObjectURL(file), true);
+            renderPhotoPreview(type, files.map(file => URL.createObjectURL(file)), true);
         };
 
         window.previewRecordPhoto = (type) => {
             const input = document.getElementById(`record_${type}_photo`);
             const preview = document.getElementById(`record_${type}_preview`);
-            const file = input.files[0];
-            if (!file) {
+            const files = Array.from(input.files);
+            if (!files.length) {
                 preview.innerHTML = '<span>No picture selected</span>';
                 return;
             }
-            if (!file.type.startsWith('image/')) {
-                alert('Please select an image file.');
+            if (files.length > MAX_PHOTOS_PER_SECTION) {
+                alert('Please select no more than 2 pictures.');
                 input.value = "";
                 preview.innerHTML = '<span>No picture selected</span>';
                 return;
             }
-            const objectUrl = URL.createObjectURL(file);
-            preview.innerHTML = `<img src="${escapeHtml(objectUrl)}" alt="${type} picture"><span>Picture selected</span>`;
+            if (files.some(file => !file.type.startsWith('image/'))) {
+                alert('Please select image files only.');
+                input.value = "";
+                preview.innerHTML = '<span>No picture selected</span>';
+                return;
+            }
+            preview.innerHTML = files.map((file, index) =>
+                `<img src="${escapeHtml(URL.createObjectURL(file))}" alt="${type} picture ${index + 1}">`
+            ).join('') + `<span>${files.length} picture(s) selected</span>`;
         };
 
         function compressImage(file) {
@@ -1341,39 +1551,35 @@
                     image.src = sourceUrl;
                 });
                 const canvas = document.createElement('canvas');
-                const scale = Math.min(1, 900 / Math.max(image.width, image.height));
+                const scale = Math.min(1, 640 / Math.max(image.width, image.height));
                 canvas.width = Math.round(image.width * scale);
                 canvas.height = Math.round(image.height * scale);
                 canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
 
-                let quality = 0.68;
+                let quality = 0.60;
                 let blob;
                 do {
                     blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
                     quality -= 0.08;
-                } while (blob && blob.size > 260000 && quality >= 0.28);
-
+                } while (blob && blob.size > 130000 && quality >= 0.32);
                 if (!blob) throw new Error('Could not compress picture.');
-                if (blob.size > 320000) throw new Error('Picture is too large. Please select a smaller picture.');
-                return blobToDataUrl(blob);
+                if (blob.size > 150000) throw new Error('Picture is too large. Please select a smaller picture.');
+                return blob;
             } finally {
                 URL.revokeObjectURL(sourceUrl);
             }
         }
 
-        function withTimeout(promise, milliseconds) {
-            return Promise.race([
-                promise,
-                new Promise((_, reject) => setTimeout(
-                    () => reject(Object.assign(new Error('Firebase Storage upload timed out.'), { code: 'storage/timeout' })),
-                    milliseconds
-                ))
-            ]);
+        async function uploadRecordPhoto(recordId, type, file, index) {
+            if (!file) return null;
+            const compressedBlob = await createFirestorePhoto(file);
+            return blobToDataUrl(compressedBlob);
         }
 
-        async function uploadRecordPhoto(recordId, type, file) {
-            if (!file) return null;
-            return createFirestorePhoto(file);
+        async function uploadRecordPhotos(recordId, type, files) {
+            return Promise.all(files.slice(0, MAX_PHOTOS_PER_SECTION).map((file, index) =>
+                uploadRecordPhoto(recordId, type, file, index)
+            ));
         }
 
         window.openImageModal = (encodedUrl) => {
@@ -1412,7 +1618,8 @@
                 reason: document.getElementById('edit_reason').value,
                 problem: document.getElementById('edit_problem').value,
                 root_cause: document.getElementById('edit_root').value,
-                action: document.getElementById('edit_action').value
+                action_short_term: document.getElementById('edit_action_short_term').value,
+                action_long_term: document.getElementById('edit_action_long_term').value
             });
             closeEditModal();
             alert("Record updated successfully.");
@@ -1424,16 +1631,20 @@
             const start = document.getElementById('edit_start').value;
             const end = document.getElementById('edit_end').value;
             const min = document.getElementById('edit_min').value;
-            const beforeFile = document.getElementById('edit_before_photo').files[0];
-            const afterFile = document.getElementById('edit_after_photo').files[0];
+            const beforeFiles = Array.from(document.getElementById('edit_before_photo').files);
+            const afterFiles = Array.from(document.getElementById('edit_after_photo').files);
             const saveButton = document.getElementById('btn-save-edit');
+            if ((beforeFiles.length && editingPhotoUrls.before.length + beforeFiles.length > MAX_PHOTOS_PER_SECTION)
+                || (afterFiles.length && editingPhotoUrls.after.length + afterFiles.length > MAX_PHOTOS_PER_SECTION)) {
+                return alert("Each section can contain no more than 2 pictures.");
+            }
 
             try {
                 saveButton.disabled = true;
-                saveButton.textContent = (beforeFile || afterFile) ? 'UPLOADING PICTURES...' : 'UPDATING...';
-                const [beforeUrl, afterUrl] = await Promise.all([
-                    uploadRecordPhoto(id, 'before', beforeFile),
-                    uploadRecordPhoto(id, 'after', afterFile)
+                saveButton.textContent = (beforeFiles.length || afterFiles.length) ? 'UPLOADING PICTURES...' : 'UPDATING...';
+                const [newBeforeUrls, newAfterUrls] = await Promise.all([
+                    uploadRecordPhotos(id, 'before', beforeFiles),
+                    uploadRecordPhotos(id, 'after', afterFiles)
                 ]);
                 const changes = {
                     start_time: `${date}T${start}`,
@@ -1442,10 +1653,11 @@
                     reason: document.getElementById('edit_reason').value,
                     problem: document.getElementById('edit_problem').value,
                     root_cause: document.getElementById('edit_root').value,
-                    action: document.getElementById('edit_action').value
+                    action_short_term: document.getElementById('edit_action_short_term').value,
+                    action_long_term: document.getElementById('edit_action_long_term').value
                 };
-                if (beforeUrl) changes.before_photo_url = beforeUrl;
-                if (afterUrl) changes.after_photo_url = afterUrl;
+                if (newBeforeUrls.length) changes.before_photo_urls = [...editingPhotoUrls.before, ...newBeforeUrls];
+                if (newAfterUrls.length) changes.after_photo_urls = [...editingPhotoUrls.after, ...newAfterUrls];
                 await updateDoc(doc(db, 'events', id), changes);
                 closeEditModal();
                 alert("Record updated successfully.");
