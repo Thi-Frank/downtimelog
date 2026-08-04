@@ -174,6 +174,12 @@
                         <option value="">All Lines</option>
                     </select>
                 </div>
+                <div>
+                    <label>Dept</label>
+                    <select id="db-dept" onchange="runFilter()">
+                        <option value="">All Departments</option>
+                    </select>
+                </div>
                 <button class="btn-reset" onclick="resetDashboardFilters()">Reset Filter</button>
                 <button class="btn-export" onclick="prepareDashboardSummaryEmail()">Send Dashboard Email</button>
             </div>
@@ -268,6 +274,7 @@
                 <div><label>Time Start</label><input type="text" id="f-time-start" placeholder="HH:MM" inputmode="numeric" maxlength="5" oninput="format24HourInput(this)" onchange="validate24HourInput(this); runFilter()"></div>
                 <div><label>Time End</label><input type="text" id="f-time-end" placeholder="HH:MM" inputmode="numeric" maxlength="5" oninput="format24HourInput(this)" onchange="validate24HourInput(this); runFilter()"></div>
                 <div><label>Line</label><select id="f-line" onchange="runFilter()"><option value="">All</option></select></div>
+                <div><label>Dept</label><select id="f-dept" onchange="runFilter()"><option value="">All Departments</option></select></div>
                 <div><label>Machine</label><input type="text" id="f-machine" placeholder="Search..." onkeyup="runFilter()"></div>
                 <button class="btn-reset" onclick="resetFilters()">Reset</button>
                 <button class="btn-export" id="btn-export-excel" onclick="exportToExcel()">Export Excel</button>
@@ -423,6 +430,7 @@
         let charts = {}, rawData = [], currentFilteredData = [], currentUser = null, productionSettings = [], alertSettings = { recipients: ["thithamm@deltaww.com"], sendTime: "07:30" };
         let editingPhotoUrls = { before: [], after: [] };
         const MAX_PHOTOS_PER_SECTION = 2;
+        const departmentOptions = ['IE', 'QC/QA', 'Production', 'SMT', 'B/I', 'TE', 'AE', 'ME', 'Other'];
         let historyPage = 1;
         let historyPageSize = 10;
         let lastHistoryFilterSignature = '';
@@ -537,6 +545,14 @@
             setSelectOptions('f-line', 'All', names);
             setSelectOptions('line', '-- Select Line --', names);
             updateMachineOptions();
+        }
+
+        function renderDepartmentFilterOptions() {
+            const savedDepartments = rawData.map(item => item.reason).filter(Boolean);
+            const names = [...new Set([...departmentOptions, ...savedDepartments])]
+                .sort((a, b) => a.localeCompare(b));
+            setSelectOptions('db-dept', 'All Departments', names);
+            setSelectOptions('f-dept', 'All Departments', names);
         }
 
         async function seedDefaultSettingsIfNeeded() {
@@ -738,7 +754,8 @@
             const start = document.getElementById('db-start')?.value || "All";
             const end = document.getElementById('db-end')?.value || "All";
             const line = document.getElementById('db-line')?.value || "All Lines";
-            return `Date Start: ${start}, Date End: ${end}, Line: ${line}`;
+            const dept = document.getElementById('db-dept')?.value || "All Departments";
+            return `Date Start: ${start}, Date End: ${end}, Line: ${line}, Dept: ${dept}`;
         }
 
         function buildDashboardSummary(data = currentFilteredData, title = "Dashboard Downtime Summary") {
@@ -839,6 +856,7 @@
         function loadData() { 
             onSnapshot(query(collection(db, 'events'), orderBy('createdAt', 'desc')), s => { 
                 rawData = s.docs.map(d => ({id: d.id, ...d.data()})); 
+                renderDepartmentFilterOptions();
                 runFilter(); 
             }); 
         }
@@ -851,11 +869,12 @@
         const fS = document.getElementById(pageId==='page-dashboard'?'db-start':'f-start').value;
         const fE = document.getElementById(pageId==='page-dashboard'?'db-end':'f-end').value;
         const fL = document.getElementById(pageId==='page-dashboard'?'db-line':'f-line').value;
+        const fD = document.getElementById(pageId==='page-dashboard'?'db-dept':'f-dept').value;
         const fTimeS = pageId==='page-history' ? document.getElementById('f-time-start').value : "";
         const fTimeE = pageId==='page-history' ? document.getElementById('f-time-end').value : "";
         const fM = pageId==='page-history' ? document.getElementById('f-machine').value.toLowerCase() : "";
         if (pageId === 'page-history') {
-            const filterSignature = JSON.stringify([fS, fE, fL, fTimeS, fTimeE, fM]);
+            const filterSignature = JSON.stringify([fS, fE, fL, fD, fTimeS, fTimeE, fM]);
             if (filterSignature !== lastHistoryFilterSignature) {
                 historyPage = 1;
                 lastHistoryFilterSignature = filterSignature;
@@ -870,6 +889,7 @@
         const dt = d.start_time?.split('T')[0];
         
         const matchLine = (!fL || d.line === fL);
+        const matchDept = (!fD || d.reason === fD);
         const matchMachine = (!fM || d.machine?.toLowerCase().includes(fM));
 
         let matchDateTime = true;
@@ -880,7 +900,7 @@
                 matchDateTime = (!fS || dt >= fS) && (!fE || dt <= fE);
         }
 
-        return matchLine && matchMachine && matchDateTime;
+        return matchLine && matchDept && matchMachine && matchDateTime;
     });
     
     updateUI(filtered);
@@ -1304,6 +1324,7 @@
             document.getElementById('f-time-start').value = "";
             document.getElementById('f-time-end').value = "";
             document.getElementById('f-line').value = "";
+            document.getElementById('f-dept').value = "";
             document.getElementById('f-machine').value = "";
             runFilter();
         };
@@ -1312,6 +1333,7 @@
             document.getElementById('db-start').value = "";
             document.getElementById('db-end').value = "";
             document.getElementById('db-line').value = "";
+            document.getElementById('db-dept').value = "";
             runFilter();
         };
 
