@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Downtime Analytics Pro</title>
+    <title>Downtime &amp; Issue Tracking System</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -21,6 +21,11 @@
         
         #screen-auth { display: flex; height: 100vh; align-items: center; justify-content: center; background: #0f172a; position: fixed; width: 100%; z-index: 999; }
         .auth-card { width: 420px; background: white; padding: 3rem; border-radius: 28px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .brand-heading { display:flex; align-items:center; gap:16px; }
+        .brand-logo { width:150px; height:auto; flex:0 0 auto; }
+        .brand-user { margin-left:166px; }
+        .auth-brand { flex-direction:column; justify-content:center; text-align:center; margin-bottom:2rem; }
+        .auth-brand .brand-logo { width:175px; }
 
         #screen-app { display: none; padding: 1.5rem; max-width: 100%; margin: 0 auto; flex: 1; width: 100%; }
         .header-nav { display: flex; justify-content: space-between; align-items: center; background: white; padding: 1.2rem 2.5rem; border-radius: 24px; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); }
@@ -52,6 +57,13 @@
 
         .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 1.2rem; }
         label { font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; display: block; }
+        .required-mark { color: var(--danger); font-weight: 800; }
+        .record-type-select { border-width:2px; font-size:.85rem; font-weight:800; transition:.2s; }
+        .record-type-downtime { color:#b91c1c; background:#fff1f2; border-color:#fda4af; }
+        .record-type-issue { color:#4338ca; background:#eef2ff; border-color:#a5b4fc; }
+        .record-type-badge { display:inline-flex; align-items:center; padding:4px 9px; border-radius:999px; font-size:.7rem; font-weight:800; white-space:nowrap; }
+        html[data-theme="dark"] .record-type-downtime { color:#fecaca; background:#451a1a; border-color:#991b1b; }
+        html[data-theme="dark"] .record-type-issue { color:#c7d2fe; background:#252b55; border-color:#6366f1; }
         input, select, textarea { padding: 0.9rem; border: 1.5px solid var(--border); border-radius: 14px; font-size: 0.95rem; width: 100%; outline: none; background: #fcfdfe; transition: 0.2s; }
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(92, 89, 232, 0.1); }
         
@@ -104,6 +116,14 @@
         .history-photo:hover { border-color: var(--primary); transform: scale(1.04); }
         .photo-placeholder { color: #94a3b8; font-size: 0.78rem; white-space: nowrap; }
         .status-select { min-width: 108px; padding: 7px 9px; border-radius: 999px; border: 1px solid var(--border); font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+        .issue-only-fields { display: none; }
+        .priority-badge, .overdue-badge { display:inline-flex; padding:4px 9px; border-radius:999px; font-size:.72rem; font-weight:800; }
+        .priority-low { color:#0369a1; background:#e0f2fe; }
+        .priority-medium { color:#92400e; background:#fef3c7; }
+        .priority-high { color:#c2410c; background:#ffedd5; }
+        .priority-critical, .overdue-badge { color:#b91c1c; background:#fee2e2; }
+        .issue-list-table { min-width: 1050px; }
+        .issue-list-table th, .issue-list-table td { padding:.85rem; }
         .status-follow-up { color: #b45309; background: #fffbeb; }
         .status-in-progress { color: #1d4ed8; background: #eff6ff; }
         .status-solved { color: #15803d; background: #f0fdf4; }
@@ -129,6 +149,9 @@
             .charts-grid, .settings-grid { grid-template-columns: 1fr; }
             .card-full { grid-column: span 1; }
             .status-summary-grid { grid-template-columns: 1fr; }
+            .brand-heading { gap:10px; }
+            .brand-logo { width:115px; }
+            .brand-user { margin-left:125px; }
         }
     </style>
 </head>
@@ -136,19 +159,19 @@
 
     <div id="screen-auth">
         <div class="auth-card">
-            <h2 style="text-align:center; margin-bottom:2rem;">Sign in to Downtime <span style="color:var(--primary)">Pro</span></h2>
+            <h2 class="brand-heading auth-brand"><img class="brand-logo" src="delta-logo.svg" alt="Delta Electronics"><span>Sign in to <span style="color:var(--primary)">Downtime &amp; Issue Tracking System</span></span></h2>
             <div style="margin-bottom:1.2rem"><label>Username</label><input type="text" id="login-user"></div>
             <div style="margin-bottom:1.8rem"><label>Password</label><input type="password" id="login-pass"></div>
             <button class="btn-submit" onclick="handleLogin()">LOGIN</button>
-            <p style="text-align: center; margin-top: 2rem; color: #94a3b8; font-size: 0.75rem;">Develop by Thirawat Th. (Ver.05)</p>
+            <p style="text-align: center; margin-top: 2rem; color: #94a3b8; font-size: 0.75rem;">Developed by Thirawat Th. (Ver.07)</p>
         </div>
     </div>
 
     <div id="screen-app">
         <div class="header-nav">
             <div>
-                <h1>Downtime <span style="color:var(--primary)">Dashboard</span></h1>
-                <p id="user-display" style="font-size: 0.8rem; color: var(--primary); font-weight: 800;"></p>
+                <h1 class="brand-heading"><img class="brand-logo" src="delta-logo.svg" alt="Delta Electronics"><span>Downtime &amp; Issue <span style="color:var(--primary)">Tracking System</span></span></h1>
+                <p id="user-display" class="brand-user" style="font-size: 0.8rem; color: var(--primary); font-weight: 800;"></p>
             </div>
             <div style="display:flex; gap:10px; align-items:center;">
                 <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">Dark Mode</button>
@@ -158,7 +181,7 @@
 
         <div class="tab-menu">
             <button class="tab-btn active" onclick="switchPage('dashboard', this)">Dashboard</button>
-            <button class="tab-btn" onclick="switchPage('record', this)">Downtime Record</button>
+            <button class="tab-btn" onclick="switchPage('record', this)">Downtime/Issue Log Record</button>
             <button class="tab-btn" id="history-tab" onclick="switchPage('history', this)">History Logs</button>
             <button class="tab-btn" id="settings-tab" onclick="switchPage('settings', this)" style="display:none;">Settings</button>
         </div>
@@ -166,6 +189,13 @@
         <!-- Dashboard Page -->
         <div id="page-dashboard" class="page-content active">
             <div class="filter-bar">
+                <div>
+                    <label>Record Type</label>
+                    <select id="db-record-type" class="record-type-select record-type-downtime" onchange="setRecordTypeHighlight(this); runFilter()">
+                        <option value="Downtime">Downtime</option>
+                        <option value="Issue Log">Issue Log</option>
+                    </select>
+                </div>
                 <div><label>Date Start</label><input type="date" id="db-start" onchange="runFilter()"></div>
                 <div><label>Date End</label><input type="date" id="db-end" onchange="runFilter()"></div>
                 <div>
@@ -184,14 +214,23 @@
                 <button class="btn-export" onclick="prepareDashboardSummaryEmail()">Send Dashboard Email</button>
             </div>
 
-            <div class="stats-grid">
+            <div class="stats-grid" id="downtime-stats">
                 <div class="stat-box"><div class="stat-label">Total Minutes</div><div class="stat-value" id="sum-minutes" style="color:var(--danger)">0</div></div>
                 <div class="stat-box"><div class="stat-label">Frequency</div><div class="stat-value" id="sum-events" style="color:var(--primary)">0</div></div>
                 <div class="stat-box"><div class="stat-label">MTTR (Avg Repair)</div><div class="stat-value" id="stat-mttr" style="color:var(--warning)">0</div></div>
                 <div class="stat-box"><div class="stat-label">Critical Line</div><div class="stat-value" id="worst-line" style="color:var(--danger); font-size:1.5rem;">-</div></div>
             </div>
 
-            <div class="card status-summary">
+            <div class="stats-grid" id="issue-kpis" style="display:none;">
+                <div class="stat-box"><div class="stat-label">Total Issues</div><div class="stat-value" id="issue-total" style="color:var(--primary)">0</div></div>
+                <div class="stat-box"><div class="stat-label">Open Issues</div><div class="stat-value" id="issue-open" style="color:var(--warning)">0</div></div>
+                <div class="stat-box"><div class="stat-label">Overdue Issues</div><div class="stat-value" id="issue-overdue" style="color:var(--danger)">0</div></div>
+                <div class="stat-box"><div class="stat-label">Solved Issues</div><div class="stat-value" id="issue-solved" style="color:var(--success)">0</div></div>
+                <div class="stat-box"><div class="stat-label">Solved Rate</div><div class="stat-value" id="issue-solved-rate">0%</div></div>
+                <div class="stat-box"><div class="stat-label">Avg. Resolution</div><div class="stat-value" id="issue-resolution-days">-</div></div>
+            </div>
+
+            <div class="card status-summary" id="issue-status-summary" style="display:none;">
                 <div class="card-title">Issue Status Summary</div>
                 <div class="status-summary-grid">
                     <div class="status-summary-item">
@@ -212,7 +251,7 @@
                 </div>
             </div>
 
-            <div class="charts-grid">
+            <div class="charts-grid" id="downtime-charts">
                 <div class="card"><div class="card-title">Total Loss Time by Line (Minutes)</div><div class="chart-box"><canvas id="lineLossChart"></canvas></div></div>
                 <div class="card"><div class="card-title">Total Loss Time by Machine (Minutes)</div><div class="chart-box"><canvas id="machineChart"></canvas></div></div>
                 <div class="card"><div class="card-title">Daily Trend (Minutes)</div><div style="height:300px;"><canvas id="trendChart"></canvas></div></div>
@@ -220,30 +259,60 @@
                 <div class="card"><div class="card-title">Top 5 Problems</div><div id="top-problems" class="top-list"></div></div>
                 <div class="card"><div class="card-title">Top 5 Root Causes</div><div id="top-root-causes" class="top-list"></div></div>
             </div>
+
+            <div id="issue-dashboard-content" style="display:none;">
+                <div class="charts-grid">
+                    <div class="card card-full"><div class="card-title">Daily Issue Trend</div><div class="chart-box"><canvas id="issueTrendChart"></canvas></div></div>
+                    <div class="card"><div class="card-title">Issues by Line</div><div class="chart-box"><canvas id="issueLineChart"></canvas></div></div>
+                    <div class="card"><div class="card-title">Issues by Machine</div><div class="chart-box"><canvas id="issueMachineChart"></canvas></div></div>
+                    <div class="card"><div class="card-title">Top 5 Problems</div><div id="issue-top-problems" class="top-list"></div></div>
+                    <div class="card"><div class="card-title">Top 5 Root Causes</div><div id="issue-top-root-causes" class="top-list"></div></div>
+                    <div class="card card-full"><div class="card-title">Top Owners with Open Issues</div><div id="issue-top-owners" class="top-list"></div></div>
+                    <div class="card card-full">
+                        <div class="card-title">Open / Overdue Issue List</div>
+                        <div class="table-container"><table class="issue-list-table"><thead><tr><th>Date</th><th>Priority</th><th>Line</th><th>Machine</th><th>Problem</th><th>Dept</th><th>Owner</th><th>Status</th><th>Target Date</th><th>Age</th></tr></thead><tbody id="issue-open-list"></tbody></table></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Record Page -->
         <div id="page-record" class="page-content">
             <div class="card">
-                <h3 style="margin-bottom:1.5rem;">Create Downtime Entry</h3>
+                <h3 style="margin-bottom:1.5rem;">Create Downtime/Issue Log Record</h3>
                 <div class="form-row">
-                    <div><label>Date</label><input type="date" id="record_date"></div>
-                    <div><label>Start Time</label><input type="text" id="start_time_only" placeholder="HH:MM" inputmode="numeric" maxlength="5" oninput="format24HourInput(this)" onchange="if(validate24HourInput(this)) autoCalcTime()"></div>
-                    <div><label>End Time</label><input type="text" id="end_time_only" placeholder="HH:MM" inputmode="numeric" maxlength="5" oninput="format24HourInput(this)" onchange="if(validate24HourInput(this)) autoCalcTime()"></div>
+                    <div>
+                        <label>Record Type <span class="required-mark">*</span></label>
+                        <select id="record_type" class="record-type-select" required onchange="setRecordTypeHighlight(this); toggleIssueFields()">
+                            <option value="">-- Select Record Type --</option>
+                            <option value="Downtime">Downtime</option>
+                            <option value="Issue Log">Issue Log</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div><label>Date <span class="required-mark">*</span></label><input type="date" id="record_date" required></div>
+                    <div><label>Start Time <span class="required-mark">*</span></label><input type="text" id="start_time_only" placeholder="HH:MM" inputmode="numeric" maxlength="5" required oninput="format24HourInput(this)" onchange="if(validate24HourInput(this)) autoCalcTime()"></div>
+                    <div><label>End Time <span class="required-mark">*</span></label><input type="text" id="end_time_only" placeholder="HH:MM" inputmode="numeric" maxlength="5" required oninput="format24HourInput(this)" onchange="if(validate24HourInput(this)) autoCalcTime()"></div>
                     <div><label>Minutes</label><input type="number" id="manual_min" readonly value="0"></div>
                 </div>
                 <div class="form-row">
-                    <div><label>Line</label><select id="line" onchange="updateMachineOptions()"><option value="">-- Select Line --</option></select></div>
-                    <div><label>Machine</label><select id="machine" disabled><option>-- Select Line First --</option></select></div>
-                    <div><label>Dept</label><select id="reason"><option value="">-- Select --</option><option>IE</option><option>QC/QA</option><option>Production</option><option>SMT</option><option>B/I</option><option>TE</option><option>AE</option><option>ME</option><option>Other</option></select></div>
+                    <div><label>Line <span class="required-mark">*</span></label><select id="line" required onchange="updateMachineOptions()"><option value="">-- Select Line --</option></select></div>
+                    <div><label>Machine <span class="required-mark">*</span></label><select id="machine" required disabled><option value="">-- Select Line First --</option></select></div>
+                    <div><label>Dept <span class="required-mark">*</span></label><select id="reason" required><option value="">-- Select --</option><option>IE</option><option>QC/QA</option><option>Production</option><option>SMT</option><option>B/I</option><option>TE</option><option>AE</option><option>ME</option><option>Other</option></select></div>
                 </div>
                 <div class="form-row">
-                    <div><label>Owner 1</label><input type="text" id="owner1"></div>
+                    <div><label>Owner 1 <span class="required-mark">*</span></label><input type="text" id="owner1" required></div>
                     <div><label>Owner 2</label><input type="text" id="owner2"></div>
                     <div><label>Owner 3</label><input type="text" id="owner3"></div>
                 </div>
+                <div class="form-row issue-only-fields" id="issue-record-fields">
+                    <div><label>Priority <span class="required-mark">*</span></label><select id="priority"><option value="">-- Select Priority --</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></div>
+                    <div><label>Target Date <span class="required-mark">*</span></label><input type="date" id="target_date"></div>
+                    <div><label>Resolved Date</label><input type="date" id="resolved_date"></div>
+                </div>
                 <div class="form-row">
-                    <div><label>Problem</label><textarea id="problem" rows="2"></textarea></div>
+                    <div><label>Problem <span class="required-mark">*</span></label><textarea id="problem" rows="2" required></textarea></div>
                     <div><label>Root Cause</label><textarea id="root_cause" rows="2"></textarea></div>
                 </div>
                 <div class="form-row">
@@ -269,6 +338,7 @@
         <!-- History Page -->
         <div id="page-history" class="page-content">
             <div class="filter-bar">
+                <div><label>Record Type</label><select id="f-record-type" class="record-type-select" onchange="setRecordTypeHighlight(this); runFilter()"><option value="">All Types</option><option value="Downtime">Downtime</option><option value="Issue Log">Issue Log</option></select></div>
                 <div><label>Date Start</label><input type="date" id="f-start" onchange="runFilter()"></div>
                 <div><label>Date End</label><input type="date" id="f-end" onchange="runFilter()"></div>
                 <div><label>Time Start</label><input type="text" id="f-time-start" placeholder="HH:MM" inputmode="numeric" maxlength="5" oninput="format24HourInput(this)" onchange="validate24HourInput(this); runFilter()"></div>
@@ -283,16 +353,21 @@
                 <table id="main-table">
                     <thead>
                         <tr>
+                            <th>Record Type</th>
+                            <th>Priority</th>
                             <th>Date</th>
                             <th>Start</th>
                             <th>End</th>
+                            <th>Min</th>
+                            <th>Target Date</th>
+                            <th>Resolved Date</th>
+                            <th>Age</th>
                             <th>Line</th>
                             <th>Machine</th>
                             <th>Problem</th>
                             <th>Cause</th>
                             <th>Action short term</th>
                             <th>Action long term</th>
-                            <th>Min</th>
                             <th>Dept</th>
                             <th>Owner</th>
                             <th>Before</th>
@@ -361,7 +436,7 @@
         <div id="editModal" class="modal">
             <div class="modal-content card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                    <h3>Edit Downtime Record</h3>
+                    <h3 id="edit-modal-title">Edit Record</h3>
                     <button onclick="closeEditModal()" style="background:none; border:none; font-size:2rem; cursor:pointer;">&times;</button>
                 </div>
                 <input type="hidden" id="edit_id">
@@ -370,6 +445,11 @@
                     <div><label>Start Time</label><input type="time" id="edit_start" onchange="autoCalcEditTime()"></div>
                     <div><label>End Time</label><input type="time" id="edit_end" onchange="autoCalcEditTime()"></div>
                     <div><label>Minutes</label><input type="number" id="edit_min" readonly></div>
+                </div>
+                <div class="form-row issue-only-fields" id="edit-issue-fields">
+                    <div><label>Priority</label><select id="edit_priority"><option value="">-- Select Priority --</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></div>
+                    <div><label>Target Date</label><input type="date" id="edit_target_date"></div>
+                    <div><label>Resolved Date</label><input type="date" id="edit_resolved_date"></div>
                 </div>
                 <div class="form-row">
                     <div><label>Problem</label><textarea id="edit_problem" rows="2"></textarea></div>
@@ -409,7 +489,7 @@
             </div>
         </div>
 
-        <footer class="footer">Develop by Thirawat Th.</footer>
+        <footer class="footer">Developed by Thirawat Th.</footer>
     </div>
     <div id="toast-area" class="toast-area" aria-live="polite"></div>
 
@@ -515,7 +595,29 @@
                 : '<span class="photo-placeholder">No picture</span>';
         };
         const issueStatuses = ['Follow up', 'In progress', 'Solved'];
+        const getRecordType = record => {
+            const storedType = record.record_type || record.log_type || record.case || 'Downtime';
+            return storedType === 'Down Time' ? 'Downtime' : storedType;
+        };
+        window.setRecordTypeHighlight = select => {
+            select.classList.remove('record-type-downtime', 'record-type-issue');
+            if (select.value === 'Downtime') select.classList.add('record-type-downtime');
+            if (select.value === 'Issue Log') select.classList.add('record-type-issue');
+        };
+        document.querySelectorAll('.record-type-select').forEach(window.setRecordTypeHighlight);
+        const recordTypeBadge = record => {
+            const type = getRecordType(record);
+            const colorClass = type === 'Issue Log' ? 'record-type-issue' : 'record-type-downtime';
+            return `<span class="record-type-badge ${colorClass}">${escapeHtml(type)}</span>`;
+        };
         const normalizeStatus = status => issueStatuses.includes(status) ? status : 'Follow up';
+        const dateDifferenceDays = (startDate, endDate) => {
+            if (!startDate || !endDate) return null;
+            const start = new Date(`${startDate}T00:00:00`);
+            const end = new Date(`${endDate}T00:00:00`);
+            return Math.max(0, Math.round((end - start) / 86400000));
+        };
+        const priorityClass = priority => `priority-${String(priority || 'Low').toLowerCase()}`;
         const statusClass = status => `status-${normalizeStatus(status).toLowerCase().replace(/\s+/g, '-')}`;
         const statusSelect = record => {
             const currentStatus = normalizeStatus(record.status);
@@ -866,6 +968,17 @@
         if(!activePage) return;
         const pageId = activePage.id;
 
+        const fRecordType = pageId==='page-dashboard'
+            ? document.getElementById('db-record-type').value
+            : (pageId==='page-history' ? document.getElementById('f-record-type').value : "");
+        if (pageId === 'page-dashboard') {
+            const isIssueDashboard = fRecordType === 'Issue Log';
+            document.getElementById('issue-status-summary').style.display = isIssueDashboard ? 'block' : 'none';
+            document.getElementById('issue-kpis').style.display = isIssueDashboard ? 'grid' : 'none';
+            document.getElementById('issue-dashboard-content').style.display = isIssueDashboard ? 'block' : 'none';
+            document.getElementById('downtime-stats').style.display = isIssueDashboard ? 'none' : 'grid';
+            document.getElementById('downtime-charts').style.display = isIssueDashboard ? 'none' : 'grid';
+        }
         const fS = document.getElementById(pageId==='page-dashboard'?'db-start':'f-start').value;
         const fE = document.getElementById(pageId==='page-dashboard'?'db-end':'f-end').value;
         const fL = document.getElementById(pageId==='page-dashboard'?'db-line':'f-line').value;
@@ -874,7 +987,7 @@
         const fTimeE = pageId==='page-history' ? document.getElementById('f-time-end').value : "";
         const fM = pageId==='page-history' ? document.getElementById('f-machine').value.toLowerCase() : "";
         if (pageId === 'page-history') {
-            const filterSignature = JSON.stringify([fS, fE, fL, fD, fTimeS, fTimeE, fM]);
+            const filterSignature = JSON.stringify([fRecordType, fS, fE, fL, fD, fTimeS, fTimeE, fM]);
             if (filterSignature !== lastHistoryFilterSignature) {
                 historyPage = 1;
                 lastHistoryFilterSignature = filterSignature;
@@ -891,6 +1004,7 @@
         const matchLine = (!fL || d.line === fL);
         const matchDept = (!fD || d.reason === fD);
         const matchMachine = (!fM || d.machine?.toLowerCase().includes(fM));
+        const matchRecordType = (!fRecordType || getRecordType(d) === fRecordType);
 
         let matchDateTime = true;
              if (filterStartFull && itemFullTime < filterStartFull) matchDateTime = false;
@@ -900,7 +1014,7 @@
                 matchDateTime = (!fS || dt >= fS) && (!fE || dt <= fE);
         }
 
-        return matchLine && matchDept && matchMachine && matchDateTime;
+        return matchLine && matchDept && matchMachine && matchRecordType && matchDateTime;
     });
     
     updateUI(filtered);
@@ -932,7 +1046,7 @@
                 const rootCause = (d.root_cause || "").trim();
                 if (problem) problemMap[problem] = (problemMap[problem] || 0) + min;
                 if (rootCause) rootCauseMap[rootCause] = (rootCauseMap[rootCause] || 0) + min;
-                statusMap[normalizeStatus(d.status)] += 1;
+                if (getRecordType(d) === 'Issue Log') statusMap[normalizeStatus(d.status)] += 1;
 
                 const day = d.start_time?.split('T')[0];
                 if(day) trendMap[day] = (trendMap[day]||0) + min;
@@ -941,18 +1055,23 @@
                     const row = document.createElement('tr');
                     const startTime = d.start_time ? formatTime24Hour(d.start_time.split('T')[1]) : "-";
                     const endTime = d.end_time ? formatTime24Hour(d.end_time.split('T')[1]) : "-";
+                    const recordAge = dateDifferenceDays(day, d.resolved_date || getLocalDateValue());
                     row.innerHTML = `
-                        <td>${day}</td><td style="color:var(--primary); font-weight:600">${startTime}</td>
+                        <td>${recordTypeBadge(d)}</td>
+                        <td>${getRecordType(d) === 'Issue Log' ? `<span class="priority-badge ${priorityClass(d.priority)}">${escapeHtml(d.priority || 'Low')}</span>` : '-'}</td>
+                        <td>${day}</td>
+                        <td style="color:var(--primary); font-weight:600">${startTime}</td>
                         <td style="color:var(--purple); font-weight:600">${endTime}</td>
+                        <td style="color:var(--danger); font-weight:800">${min}</td>
+                        <td>${escapeHtml(d.target_date || '-')}</td><td>${escapeHtml(d.resolved_date || '-')}</td><td>${recordAge === null ? '-' : `${recordAge} days`}</td>
                         <td><b>${d.line}</b></td><td>${d.machine}</td>
                         <td><small>${d.problem}</small></td><td><small>${d.root_cause}</small></td>
                         <td><small>${d.action_short_term ?? d.action ?? ''}</small></td>
                         <td><small>${d.action_long_term ?? ''}</small></td>
-                        <td style="color:var(--danger); font-weight:800">${min}</td>
                         <td>${d.reason}</td><td><small>${d.tech_name}</small></td>
                         <td>${photoCell(getPhotoUrls(d, 'before'), 'Before')}</td>
                         <td>${photoCell(getPhotoUrls(d, 'after'), 'After')}</td>
-                        <td>${statusSelect(d)}</td>
+                        <td>${getRecordType(d) === 'Issue Log' ? statusSelect(d) : '-'}</td>
                         <td>
                             <div style="display:flex; gap:8px;">
                                 <button onclick="openEdit('${d.id}')" style="color:var(--primary); cursor:pointer; background:none; border:none; font-weight:bold;">แก้ไข</button>
@@ -976,7 +1095,9 @@
             renderTopList('top-problems', problemMap);
             renderTopList('top-root-causes', rootCauseMap);
             renderMachineChart(machineMap);
-            renderStatusSummary(statusMap, data.length);
+            const issueData = data.filter(record => getRecordType(record) === 'Issue Log');
+            renderStatusSummary(statusMap, issueData.length);
+            renderIssueDashboard(issueData);
         }
 
         function renderHistoryPagination(totalRecords, totalPages) {
@@ -1035,6 +1156,89 @@
                 document.getElementById(`status-${elementKey}-bar`).style.width = `${percent}%`;
                 document.getElementById(`status-${elementKey}-percent`).textContent = `${percent.toFixed(1)}% of issues`;
             });
+        }
+
+        function renderIssueDashboard(issueData) {
+            const today = getLocalDateValue();
+            const openIssues = issueData.filter(item => normalizeStatus(item.status) !== 'Solved');
+            const solvedIssues = issueData.filter(item => normalizeStatus(item.status) === 'Solved');
+            const overdueIssues = openIssues.filter(item => item.target_date && item.target_date < today);
+            const resolutionDays = solvedIssues
+                .map(item => dateDifferenceDays(item.start_time?.split('T')[0], item.resolved_date))
+                .filter(days => days !== null);
+
+            document.getElementById('issue-total').textContent = issueData.length.toLocaleString();
+            document.getElementById('issue-open').textContent = openIssues.length.toLocaleString();
+            document.getElementById('issue-overdue').textContent = overdueIssues.length.toLocaleString();
+            document.getElementById('issue-solved').textContent = solvedIssues.length.toLocaleString();
+            document.getElementById('issue-solved-rate').textContent = issueData.length ? `${((solvedIssues.length / issueData.length) * 100).toFixed(1)}%` : '0%';
+            document.getElementById('issue-resolution-days').textContent = resolutionDays.length
+                ? `${(resolutionDays.reduce((sum, days) => sum + days, 0) / resolutionDays.length).toFixed(1)} days`
+                : '-';
+
+            const trendCounts = {}, lineCounts = {}, machineCounts = {}, problemCounts = {}, rootCauseCounts = {}, ownerCounts = {};
+            issueData.forEach(item => {
+                const date = item.start_time?.split('T')[0];
+                const problem = (item.problem || 'Unspecified').trim();
+                const rootCause = (item.root_cause || 'Unspecified').trim();
+                if (date) trendCounts[date] = (trendCounts[date] || 0) + 1;
+                lineCounts[item.line || 'Unknown'] = (lineCounts[item.line || 'Unknown'] || 0) + 1;
+                machineCounts[item.machine || 'Unknown'] = (machineCounts[item.machine || 'Unknown'] || 0) + 1;
+                problemCounts[problem] = (problemCounts[problem] || 0) + 1;
+                rootCauseCounts[rootCause] = (rootCauseCounts[rootCause] || 0) + 1;
+            });
+            openIssues.forEach(item => {
+                const owners = String(item.tech_name || 'Unassigned').split(',').map(owner => owner.trim()).filter(Boolean);
+                owners.forEach(owner => { ownerCounts[owner] = (ownerCounts[owner] || 0) + 1; });
+            });
+            renderIssueCountChart('issueTrendChart', trendCounts, 'line', '#10b981');
+            renderIssueCountChart('issueLineChart', lineCounts, 'bar', '#8b5cf6');
+            renderIssueCountChart('issueMachineChart', machineCounts, 'bar', '#f59e0b');
+            renderCountTopList('issue-top-problems', problemCounts, 'Issue');
+            renderCountTopList('issue-top-root-causes', rootCauseCounts, 'Issue');
+            renderCountTopList('issue-top-owners', ownerCounts, 'Open');
+
+            const priorityRank = { Critical: 4, High: 3, Medium: 2, Low: 1 };
+            const list = document.getElementById('issue-open-list');
+            const sortedOpenIssues = [...openIssues].sort((a, b) => {
+                const aOverdue = a.target_date && a.target_date < today ? 1 : 0;
+                const bOverdue = b.target_date && b.target_date < today ? 1 : 0;
+                return bOverdue - aOverdue || (priorityRank[b.priority] || 0) - (priorityRank[a.priority] || 0) || String(a.target_date || '9999').localeCompare(String(b.target_date || '9999'));
+            }).slice(0, 10);
+            list.innerHTML = sortedOpenIssues.length ? sortedOpenIssues.map(item => {
+                const createdDate = item.start_time?.split('T')[0] || '';
+                const age = dateDifferenceDays(createdDate, today);
+                const isOverdue = item.target_date && item.target_date < today;
+                return `<tr>
+                    <td>${escapeHtml(createdDate || '-')}</td>
+                    <td><span class="priority-badge ${priorityClass(item.priority)}">${escapeHtml(item.priority || 'Low')}</span></td>
+                    <td>${escapeHtml(item.line || '-')}</td><td>${escapeHtml(item.machine || '-')}</td>
+                    <td>${escapeHtml(item.problem || '-')}</td><td>${escapeHtml(item.reason || '-')}</td>
+                    <td>${escapeHtml(item.tech_name || 'Unassigned')}</td><td>${escapeHtml(normalizeStatus(item.status))}</td>
+                    <td>${escapeHtml(item.target_date || '-')} ${isOverdue ? '<span class="overdue-badge">Overdue</span>' : ''}</td>
+                    <td>${age === null ? '-' : `${age} days`}</td>
+                </tr>`;
+            }).join('') : '<tr><td colspan="10"><div class="empty-state">No open issues for the selected filter.</div></td></tr>';
+        }
+
+        function renderIssueCountChart(canvasId, valueMap, type, color) {
+            if (charts[canvasId]) charts[canvasId].destroy();
+            const entries = Object.entries(valueMap).sort((a, b) => type === 'line' ? a[0].localeCompare(b[0]) : b[1] - a[1]);
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            charts[canvasId] = new Chart(canvas.getContext('2d'), {
+                type,
+                data: { labels: entries.map(([label]) => label), datasets: [{ label: 'Issues', data: entries.map(([, count]) => count), borderColor: color, backgroundColor: type === 'line' ? `${color}22` : color, borderRadius: 7, tension: .35, fill: type === 'line' }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function renderCountTopList(elementId, valueMap, suffix) {
+            const list = document.getElementById(elementId);
+            const items = Object.entries(valueMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            list.innerHTML = items.length ? items.map(([label, count], index) => `
+                <div class="top-list-row"><div class="top-rank">${index + 1}</div><div class="top-text">${escapeHtml(label)}</div><div class="top-meta">${count} ${suffix}</div></div>
+            `).join('') : '<div class="empty-state">No data for selected filter.</div>';
         }
 
         function renderTopList(elementId, valueMap) {
@@ -1110,6 +1314,26 @@
             }
             return true;
         };
+
+        window.toggleIssueFields = () => {
+            const recordType = document.getElementById('record_type').value;
+            window.setRecordTypeHighlight(document.getElementById('record_type'));
+            const hasRecordType = Boolean(recordType);
+            const isIssue = recordType === 'Issue Log';
+            document.querySelectorAll('#page-record input, #page-record select, #page-record textarea, #page-record button').forEach(control => {
+                if (control.id !== 'record_type') control.disabled = !hasRecordType;
+            });
+            document.getElementById('issue-record-fields').style.display = isIssue ? 'grid' : 'none';
+            document.getElementById('priority').required = isIssue;
+            document.getElementById('target_date').required = isIssue;
+            if (!isIssue) {
+                document.getElementById('priority').value = '';
+                document.getElementById('target_date').value = '';
+                document.getElementById('resolved_date').value = '';
+            }
+            if (hasRecordType) updateMachineOptions();
+        };
+        window.toggleIssueFields();
 
         function getShiftLabel(startTime) {
             const time = startTime?.split('T')[1];
@@ -1222,6 +1446,10 @@
         };
 
         window.submitEvent = async () => {
+            const recordType = document.getElementById('record_type').value;
+            const priority = document.getElementById('priority').value;
+            const targetDate = document.getElementById('target_date').value;
+            const resolvedDate = document.getElementById('resolved_date').value;
             const rDate = document.getElementById('record_date').value;
             const line = document.getElementById('line').value;
             const machine = document.getElementById('machine').value;
@@ -1233,11 +1461,33 @@
             const root = document.getElementById('root_cause').value;
             const actionShortTerm = document.getElementById('action_short_term').value;
             const actionLongTerm = document.getElementById('action_long_term').value;
-            const owners = [document.getElementById('owner1').value, document.getElementById('owner2').value, document.getElementById('owner3').value].filter(x=>x).join(", ");
+            const owner1 = document.getElementById('owner1').value.trim();
+            const owners = [owner1, document.getElementById('owner2').value.trim(), document.getElementById('owner3').value.trim()].filter(x=>x).join(", ");
             const beforeFiles = Array.from(document.getElementById('record_before_photo').files);
             const afterFiles = Array.from(document.getElementById('record_after_photo').files);
             
-            if(!rDate || !line || !machine || !startTime || !endTime || !reason) return alert("Please complete all required fields.");
+            const requiredFields = [
+                { element: document.getElementById('record_type'), value: recordType, label: 'Record Type' },
+                { element: document.getElementById('record_date'), value: rDate, label: 'Date' },
+                { element: document.getElementById('start_time_only'), value: startTime, label: 'Start Time' },
+                { element: document.getElementById('end_time_only'), value: endTime, label: 'End Time' },
+                { element: document.getElementById('line'), value: line, label: 'Line' },
+                { element: document.getElementById('machine'), value: machine, label: 'Machine' },
+                { element: document.getElementById('reason'), value: reason, label: 'Dept' },
+                { element: document.getElementById('owner1'), value: owner1, label: 'Owner 1' },
+                { element: document.getElementById('problem'), value: problem.trim(), label: 'Problem' }
+            ];
+            const missingFields = requiredFields.filter(field => !field.value);
+            if (recordType === 'Issue Log') {
+                if (!priority) missingFields.push({ element: document.getElementById('priority'), label: 'Priority' });
+                if (!targetDate) missingFields.push({ element: document.getElementById('target_date'), label: 'Target Date' });
+            }
+            if (missingFields.length) {
+                alert(`Please complete the required fields: ${missingFields.map(field => field.label).join(', ')}`);
+                missingFields[0].element.focus();
+                return;
+            }
+            if (!validate24HourInput(document.getElementById('start_time_only')) || !validate24HourInput(document.getElementById('end_time_only'))) return;
             if (beforeFiles.length > MAX_PHOTOS_PER_SECTION || afterFiles.length > MAX_PHOTOS_PER_SECTION) return alert("Please select no more than 2 pictures in each section.");
 
             try {
@@ -1250,6 +1500,10 @@
                     uploadRecordPhotos(recordRef.id, 'after', afterFiles)
                 ]);
                 await setDoc(recordRef, {
+                    record_type: recordType,
+                    priority: recordType === 'Issue Log' ? priority : '',
+                    target_date: recordType === 'Issue Log' ? targetDate : '',
+                    resolved_date: recordType === 'Issue Log' ? resolvedDate : '',
                     line, machine, tech_name: owners,
                     reason, problem, root_cause: root,
                     action_short_term: actionShortTerm,
@@ -1277,6 +1531,7 @@
                 document.getElementById(id).value = "";
             });
             document.getElementById('manual_min').value = "0";
+            document.getElementById('record_type').value = "";
             document.getElementById('line').value = "";
             document.getElementById('reason').value = "";
             updateMachineOptions();
@@ -1285,8 +1540,8 @@
             document.getElementById('record_before_preview').innerHTML = '<span>No picture selected</span>';
             document.getElementById('record_after_preview').innerHTML = '<span>No picture selected</span>';
             const saveButton = document.getElementById('btn-save-record');
-            saveButton.disabled = false;
             saveButton.textContent = 'SAVE RECORD';
+            window.toggleIssueFields();
         }
 
         window.confirmDelete = async (id) => {
@@ -1304,10 +1559,14 @@
             select.disabled = true;
             select.className = `status-select ${statusClass(nextStatus)}`;
             try {
-                await updateDoc(doc(db, 'events', id), {
+                const statusChanges = {
                     status: nextStatus,
                     status_updated_at: serverTimestamp()
-                });
+                };
+                if (getRecordType(record) === 'Issue Log') {
+                    statusChanges.resolved_date = nextStatus === 'Solved' ? (record.resolved_date || getLocalDateValue()) : '';
+                }
+                await updateDoc(doc(db, 'events', id), statusChanges);
                 showToast(`Status updated to ${nextStatus}.`);
             } catch (error) {
                 select.value = previousStatus;
@@ -1319,6 +1578,8 @@
         };
 
         window.resetFilters = () => {
+            document.getElementById('f-record-type').value = "";
+            window.setRecordTypeHighlight(document.getElementById('f-record-type'));
             document.getElementById('f-start').value = "";
             document.getElementById('f-end').value = "";
             document.getElementById('f-time-start').value = "";
@@ -1330,6 +1591,8 @@
         };
 
         window.resetDashboardFilters = () => {
+            document.getElementById('db-record-type').value = "Downtime";
+            window.setRecordTypeHighlight(document.getElementById('db-record-type'));
             document.getElementById('db-start').value = "";
             document.getElementById('db-end').value = "";
             document.getElementById('db-line').value = "";
@@ -1357,11 +1620,16 @@
                 button.textContent = 'Preparing Excel & Pictures...';
 
                 const workbook = new ExcelJS.Workbook();
-                const sheet = workbook.addWorksheet('Downtime_History', {
+                const sheet = workbook.addWorksheet('Record_History', {
                     views: [{ state: 'frozen', ySplit: 1 }]
                 });
                 sheet.columns = [
                     { header: 'Date', key: 'date', width: 14 },
+                    { header: 'Record Type', key: 'recordType', width: 18 },
+                    { header: 'Priority', key: 'priority', width: 12 },
+                    { header: 'Target Date', key: 'targetDate', width: 14 },
+                    { header: 'Resolved Date', key: 'resolvedDate', width: 14 },
+                    { header: 'Age (Days)', key: 'ageDays', width: 12 },
                     { header: 'Start', key: 'start', width: 12 },
                     { header: 'End', key: 'end', width: 12 },
                     { header: 'Line', key: 'line', width: 14 },
@@ -1387,6 +1655,11 @@
                 for (const d of currentFilteredData) {
                     const row = sheet.addRow({
                         date: d.start_time?.split('T')[0] || '',
+                        recordType: getRecordType(d),
+                        priority: getRecordType(d) === 'Issue Log' ? (d.priority || 'Low') : '',
+                        targetDate: d.target_date || '',
+                        resolvedDate: d.resolved_date || '',
+                        ageDays: dateDifferenceDays(d.start_time?.split('T')[0], d.resolved_date || getLocalDateValue()) ?? '',
                         start: d.start_time ? formatTime24Hour(d.start_time.split('T')[1]) : '',
                         end: d.end_time ? formatTime24Hour(d.end_time.split('T')[1]) : '',
                         line: d.line || '',
@@ -1398,7 +1671,7 @@
                         minutes: parseInt(d.manual_min) || 0,
                         department: d.reason || '',
                         owner: d.tech_name || '',
-                        status: normalizeStatus(d.status),
+                        status: getRecordType(d) === 'Issue Log' ? normalizeStatus(d.status) : '',
                         before: getPhotoUrls(d, 'before').length ? `${getPhotoUrls(d, 'before').length} picture(s)` : 'No picture',
                         after: getPhotoUrls(d, 'after').length ? `${getPhotoUrls(d, 'after').length} picture(s)` : 'No picture'
                     });
@@ -1407,7 +1680,7 @@
                     row.height = (beforePhotos.length || afterPhotos.length) ? 58 : 22;
                     row.alignment = { vertical: 'middle', wrapText: true };
 
-                    for (const [sources, columnIndex] of [[beforePhotos, 13], [afterPhotos, 14]]) {
+                    for (const [sources, columnIndex] of [[beforePhotos, 18], [afterPhotos, 19]]) {
                         for (let imageIndex = 0; imageIndex < sources.length; imageIndex++) {
                             const source = sources[imageIndex];
                             try {
@@ -1427,7 +1700,7 @@
                     }
                 }
 
-                sheet.autoFilter = { from: 'A1', to: 'O1' };
+                sheet.autoFilter = { from: 'A1', to: 'T1' };
                 sheet.eachRow(row => {
                     row.eachCell(cell => {
                         cell.border = {
@@ -1445,7 +1718,7 @@
                 }));
                 const link = document.createElement('a');
                 link.href = downloadUrl;
-                link.download = `Downtime_Export_${new Date().toISOString().slice(0,10)}.xlsx`;
+                link.download = `Downtime_Issue_Log_Export_${new Date().toISOString().slice(0,10)}.xlsx`;
                 link.click();
                 setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
             } catch (error) {
@@ -1459,7 +1732,9 @@
         window.openEdit = (id) => {
             const d = rawData.find(x => x.id === id);
             if(!d) return;
+            const isIssue = getRecordType(d) === 'Issue Log';
             document.getElementById('edit_id').value = id;
+            document.getElementById('edit-modal-title').textContent = `Edit ${getRecordType(d)} Record`;
             document.getElementById('edit_date').value = d.start_time.split('T')[0];
             document.getElementById('edit_start').value = d.start_time.split('T')[1];
             document.getElementById('edit_end').value = d.end_time.split('T')[1];
@@ -1469,6 +1744,10 @@
             document.getElementById('edit_root').value = d.root_cause;
             document.getElementById('edit_action_short_term').value = d.action_short_term ?? d.action ?? '';
             document.getElementById('edit_action_long_term').value = d.action_long_term ?? '';
+            document.getElementById('edit-issue-fields').style.display = isIssue ? 'grid' : 'none';
+            document.getElementById('edit_priority').value = d.priority || '';
+            document.getElementById('edit_target_date').value = d.target_date || '';
+            document.getElementById('edit_resolved_date').value = d.resolved_date || '';
             document.getElementById('edit_before_photo').value = "";
             document.getElementById('edit_after_photo').value = "";
             editingPhotoUrls = { before: getPhotoUrls(d, 'before'), after: getPhotoUrls(d, 'after') };
@@ -1649,6 +1928,8 @@
 
         window.saveEditWithPhotos = async () => {
             const id = document.getElementById('edit_id').value;
+            const editedRecord = rawData.find(record => record.id === id);
+            const editingIssue = getRecordType(editedRecord || {}) === 'Issue Log';
             const date = document.getElementById('edit_date').value;
             const start = document.getElementById('edit_start').value;
             const end = document.getElementById('edit_end').value;
@@ -1656,6 +1937,9 @@
             const beforeFiles = Array.from(document.getElementById('edit_before_photo').files);
             const afterFiles = Array.from(document.getElementById('edit_after_photo').files);
             const saveButton = document.getElementById('btn-save-edit');
+            if (editingIssue && (!document.getElementById('edit_priority').value || !document.getElementById('edit_target_date').value)) {
+                return alert('Please complete Priority and Target Date for this Issue Log.');
+            }
             if ((beforeFiles.length && editingPhotoUrls.before.length + beforeFiles.length > MAX_PHOTOS_PER_SECTION)
                 || (afterFiles.length && editingPhotoUrls.after.length + afterFiles.length > MAX_PHOTOS_PER_SECTION)) {
                 return alert("Each section can contain no more than 2 pictures.");
@@ -1678,6 +1962,11 @@
                     action_short_term: document.getElementById('edit_action_short_term').value,
                     action_long_term: document.getElementById('edit_action_long_term').value
                 };
+                if (editingIssue) {
+                    changes.priority = document.getElementById('edit_priority').value;
+                    changes.target_date = document.getElementById('edit_target_date').value;
+                    changes.resolved_date = document.getElementById('edit_resolved_date').value;
+                }
                 if (newBeforeUrls.length) changes.before_photo_urls = [...editingPhotoUrls.before, ...newBeforeUrls];
                 if (newAfterUrls.length) changes.after_photo_urls = [...editingPhotoUrls.after, ...newAfterUrls];
                 await updateDoc(doc(db, 'events', id), changes);
