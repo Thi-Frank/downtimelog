@@ -29,6 +29,8 @@
 
         #screen-app { display: none; padding: 1.5rem; max-width: 100%; margin: 0 auto; flex: 1; width: 100%; }
         .header-nav { display: flex; justify-content: space-between; align-items: center; background: white; padding: 1.2rem 2.5rem; border-radius: 24px; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+        .header-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; align-items:center; }
+        .header-clock { color:var(--text-main); background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:9px 12px; font-size:.82rem; font-weight:800; white-space:nowrap; font-variant-numeric:tabular-nums; }
         
         .tab-menu { display: flex; gap: 10px; margin-bottom: 1.5rem; background: #f1f5f9; padding: 8px; border-radius: 18px; width: fit-content; }
         .tab-btn { padding: 12px 30px; border: none; border-radius: 14px; cursor: pointer; font-weight: 700; background: none; color: var(--text-sub); transition: 0.3s; font-size: 0.95rem; }
@@ -173,7 +175,8 @@
                 <h1 class="brand-heading"><img class="brand-logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTkuNzYiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCAyNTkuNzYgODAiPgogIDxnIGlkPSJHcm91cF8zNDgxIiBkYXRhLW5hbWU9Ikdyb3VwIDM0ODEiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC02OC43NCAtMTExLjI5NSkiPgogICAgPHBhdGggaWQ9IlBhdGhfMTEzMjYiIGRhdGEtbmFtZT0iUGF0aCAxMTMyNiIgZD0iTTQ0MS4zLDIxNS43MzZhLjQzLjQzLDAsMCwwLC4xMzUtLjMxOXYtNi44NWEuNDUxLjQ1MSwwLDAsMC0uNDU1LS40NTNsLTMxLjk1LS4wNGEuNDYyLjQ2MiwwLDAsMC0uNDQ3LjQ1MXY2LjkyNmEuNDE2LjQxNiwwLDAsMCwuMTM3LjMxOS40MjguNDI4LDAsMCwwLC4zMS4xMzZoMTAuNzc4VjI0NC45YS40NDkuNDQ5LDAsMCwwLC4xMzEuMzIyLjQ4OS40ODksMCwwLDAsLjMyLjEyOWg4LjE2MWExLjkzNywxLjkzNywwLDAsMCwxLjkxOS0yLjA1MVYyMTUuODY4aDEwLjY0YS40NTguNDU4LDAsMCwwLC4zMi0uMTMyTTM4NC40NCwyMzguMDUxYS40NTUuNDU1LDAsMCwwLS40NTEtLjQ1MUgzNjMuNzh2LTguMTU4SDM4MS4yYS40NTYuNDU2LDAsMCwwLC4zMTktLjEzMy40Ny40NywwLDAsMCwuMTMzLS4zMTh2LTYuODczYS40NTYuNDU2LDAsMCwwLS40NTEtLjQ0NEgzNjMuODQydi01LjdoMjAuMTQ2YS40NC40NCwwLDAsMCwuMzE1LS4xMzEuNDU5LjQ1OSwwLDAsMCwuMTM2LS4zMTF2LTcuMDA1YS40NzMuNDczLDAsMCwwLS4xMzYtLjMxOS40NDIuNDQyLDAsMCwwLS4zMTUtLjEzM2gtMzAuN2EuNDM1LjQzNSwwLDAsMC0uMzE5LjEzMy40NzcuNDc3LDAsMCwwLS4xNC4zMTl2MzIuNTM3YTQuMDg1LDQuMDg1LDAsMCwwLDEuNjMyLDMuMjEzLDUuMTgxLDUuMTgxLDAsMCwwLDMuMDU0LDEuMTU2aDI0Ljg5MWEyLjQxNywyLjQxNywwLDAsMCwxLjg0Mi0xLjIsMS4yMTksMS4yMTksMCwwLDAsLjEyMS0uMjM2LjgyOS44MjksMCwwLDAsLjA2OS0uMjc2di01LjY3NFptMzIuMDc2LjA4MmEuNDU3LjQ1NywwLDAsMC0uMTIxLS4zMjIuNDcuNDcsMCwwLDAtLjMxOS0uMTMzSDM5OC40MzNsLjAwNy0yOS4xMjJhLjQ3Mi40NzIsMCwwLDAtLjQ1NC0uNDUzaC05LjcwOGEuNDUuNDUsMCwwLDAtLjQ1Mi40NTN2MzIuMzc2YTQuMjIsNC4yMiwwLDAsMCwxLjYwOCwzLjQ2OSw0LjkxNCw0LjkxNCwwLDAsMCwyLjg2NywxLjAzMWgyMi40ODZhMS42NzgsMS42NzgsMCwwLDAsMS4yMTUtLjcyNywyLjQsMi40LDAsMCwwLC41MjItMS4yNzVsLS4wMDcsMCwuMDA3LS4wMTNjLS4wMDctLjYzOS0uMDA3LTMuODYtLjAwNy01LjI4MW0tNzQuNjQzLTEzLjc0OWMtNC4wMzktNS43LTguMzEtMTEuNzQ1LTkuMjMtMTMuMDkxaC0uMDFhOS44LDkuOCwwLDAsMC0xLjc4My0xLjk2MSw4LjUsOC41LDAsMCwwLTEzLjk1Nyw2LjUxNXYyOS4xMTFhLjQ1OC40NTgsMCwwLDAsLjQ1MS40NTNoOS45YS40NTMuNDUzLDAsMCwwLC4zMi0uMTM2LjQ2OS40NjksMCwwLDAsLjEzMS0uMzE3VjIyMi4zNjlsMTAuNjMzLDE1LjI4OGgtNi45MDdhLjQ1OS40NTksMCwwLDAtLjMyLjEzMy40NjcuNDY3LDAsMCwwLS4xMy4zMjJ2Ni44NDZhLjQ0OS40NDksMCwwLDAsLjEzLjMxNy40MjkuNDI5LDAsMCwwLC4zMi4xMzZoMTMuMTE2YTYuMzE5LDYuMzE5LDAsMCwwLDUuMTY5LTkuOTQ3Yy0uMDA1LS4wMTUtMy44MDUtNS4zNzUtNy44MzgtMTEuMDc5bTExOC0xNy4wMWE4LjQ3LDguNDcsMCwwLDAtNS40NjYsMS45OSwxMC40LDEwLjQsMCwwLDAtMS43ODYsMS45NTVjLS45MiwxLjMzMy01LjE5MSw3LjM4OC05LjIzLDEzLjA4OHMtNy44MzEsMTEuMDctNy44NDEsMTEuMDc5YTYuMzIyLDYuMzIyLDAsMCwwLDUuMTc0LDkuOTQ2aDEzLjExNGEuNDI3LjQyNywwLDAsMCwuMzItLjEzOC40MTMuNDEzLDAsMCwwLC4xMzEtLjMxM3YtNi44NDRhLjQzNi40MzYsMCwwLDAtLjEzMS0uMzIyLjQ0OC40NDgsMCwwLDAtLjMyLS4xMjloLTYuOTFsMTAuNjMzLTE1LjMsMCwyMi41OWEuNDcuNDcsMCwwLDAsLjEzLjMxOS40NTcuNDU3LDAsMCwwLC4zMi4xMzJoOS45YS40MzMuNDMzLDAsMCwwLC4zMTktLjEzOC40MS40MSwwLDAsMCwuMTMzLS4zMTNWMjE1Ljg2OGE4LjUsOC41LDAsMCwwLTguNS04LjQ5NCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTEzOS44NjcgLTU0LjEzNykiIGZpbGw9IiMwMDg3ZGMiLz4KICAgIDxwYXRoIGlkPSJQYXRoXzExMzI3IiBkYXRhLW5hbWU9IlBhdGggMTEzMjciIGQ9Ik0xMTcuNDA4LDExMS4yOTVsLTQ4LjY2OCw4MGg5Ny4wOTVabTkuMjgsNzAuNjgzYTExLjMsMTEuMywwLDAsMS02LjEzMy0xLjhjLS4wMzguMDI4LS4wODIuMDY0LS4xMjkuMS01LjUwOSwzLjgyLTExLjUsNi4yNjktMTcuMDYsNi4yODktLjMsMC0uNTkxLS4wMDUtLjg3OS0uMDJhMTIuOTczLDEyLjk3MywwLDAsMS05LjI2OS00LjA4NywxMS41NzQsMTEuNTc0LDAsMCwxLTMuMDE0LTcuMTg4Yy0uMDA3LS4xODQtLjAxNC0uMzc0LS4wMTQtLjU3Ni4wNzItNi44MzQsNC43NDYtMTQuMjE4LDExLjE0LTIwLjIzNyw2LjQxNC01Ljk1MSwxNC42OS0xMC41MTIsMjIuODE2LTEwLjU5NGEuODgxLjg4MSwwLDAsMSwuMTIyLS4wMDcsMTIuNTksMTIuNTksMCwwLDEsOS4yLDMuNDcyLDEyLjAwOCwxMi4wMDgsMCwwLDEsMy4zMTcsOC42MTcsMTguMzYyLDE4LjM2MiwwLDAsMS0xLjU0OCw3LjE0MSwxMS4zNzEsMTEuMzcxLDAsMCwxLTguNTQ1LDE4Ljg5bTMuNzcyLTMxLjY2NmE4LjM2OCw4LjM2OCwwLDAsMC02LjE5My0yLjIxNWgtLjA4MmMtNi40OSwwLTE0LjEyOCwzLjk4LTE5Ljk3Miw5LjQ1Ny01LjksNS40MzQtOS44NjQsMTIuMzgyLTkuNzg4LDE3LjE0MywwLC4xMTgsMCwuMjQ3LjAwOS4zOTJhNy40MzMsNy40MzMsMCwwLDAsMS45Miw0LjUzLDguNjkxLDguNjkxLDAsMCwwLDYuMzM2LDIuN2MuMjIyLjAwNy40NTEuMDE4LjY3Ni4wMTgsNC4xLjAxNiw5LjI0MS0xLjksMTQuMDUzLTUuMTQyYTExLjM2NywxMS4zNjcsMCwwLDEsMTQuMzE1LTE2Ljc5LDEzLjUsMTMuNSwwLDAsMCwuODEzLTQuNDU2LDcuNzg4LDcuNzg4LDAsMCwwLTIuMDg3LTUuNjM1IiBmaWxsPSIjMDA4N2RjIi8+CiAgPC9nPgo8L3N2Zz4=" alt="Delta Electronics"><span>Downtime &amp; Issue <span style="color:var(--primary)">Tracking System</span></span></h1>
                 <p id="user-display" class="brand-user" style="font-size: 0.8rem; color: var(--primary); font-weight: 800;"></p>
             </div>
-            <div style="display:flex; gap:10px; align-items:center;">
+            <div class="header-actions">
+                <time id="header-clock" class="header-clock" aria-label="Current date and time"></time>
                 <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">Dark Mode</button>
                 <button onclick="doSignOut()" style="background:#fee2e2; color:var(--danger); border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight:700;">Sign Out</button>
             </div>
@@ -211,7 +214,8 @@
                     </select>
                 </div>
                 <button class="btn-reset" onclick="resetDashboardFilters()">Reset Filter</button>
-                <button class="btn-export" onclick="prepareDashboardSummaryEmail()">Send Dashboard Email</button>
+                <button class="btn-export" onclick="prepareDashboardSummaryEmail('lop1')">Email LOP 1</button>
+                <button class="btn-export" onclick="prepareDashboardSummaryEmail('lop2')">Email LOP 2</button>
             </div>
 
             <div class="stats-grid" id="downtime-stats">
@@ -271,6 +275,11 @@
                     <div class="card card-full">
                         <div class="card-title">Open / Overdue Issue List</div>
                         <div class="table-container"><table class="issue-list-table"><thead><tr><th>Date</th><th>Priority</th><th>Line</th><th>Machine</th><th>Problem</th><th>Dept</th><th>Owner</th><th>Status</th><th>Target Date</th><th>Age</th></tr></thead><tbody id="issue-open-list"></tbody></table></div>
+                        <div class="pagination-bar">
+                            <div class="pagination-size"><label for="issue-page-size">Show</label><select id="issue-page-size" onchange="changeIssuePageSize(this.value)"><option value="10">10</option><option value="20">20</option></select><span class="pagination-info">records per page</span></div>
+                            <div id="issue-page-info" class="pagination-info"></div>
+                            <div id="issue-pagination" class="pagination-pages" aria-label="Open issue pages"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -292,9 +301,9 @@
                 </div>
                 <div class="form-row">
                     <div><label>Date <span class="required-mark">*</span></label><input type="date" id="record_date" required></div>
-                    <div><label>Start Time <span class="required-mark">*</span></label><input type="text" id="start_time_only" placeholder="HH:MM" inputmode="numeric" maxlength="5" required oninput="format24HourInput(this)" onchange="if(validate24HourInput(this)) autoCalcTime()"></div>
-                    <div><label>End Time <span class="required-mark">*</span></label><input type="text" id="end_time_only" placeholder="HH:MM" inputmode="numeric" maxlength="5" required oninput="format24HourInput(this)" onchange="if(validate24HourInput(this)) autoCalcTime()"></div>
-                    <div><label>Minutes</label><input type="number" id="manual_min" readonly value="0"></div>
+                    <div id="record-start-time-field"><label>Start Time <span class="required-mark">*</span></label><input type="text" id="start_time_only" placeholder="HH:MM" inputmode="numeric" maxlength="5" required oninput="format24HourInput(this)" onchange="if(validate24HourInput(this)) autoCalcTime()"></div>
+                    <div id="record-end-time-field"><label>End Time <span class="required-mark">*</span></label><input type="text" id="end_time_only" placeholder="HH:MM" inputmode="numeric" maxlength="5" required oninput="format24HourInput(this)" onchange="if(validate24HourInput(this)) autoCalcTime()"></div>
+                    <div id="record-minutes-field"><label>Minutes</label><input type="number" id="manual_min" readonly value="0"></div>
                 </div>
                 <div class="form-row">
                     <div><label>Line <span class="required-mark">*</span></label><select id="line" required onchange="updateMachineOptions()"><option value="">-- Select Line --</option></select></div>
@@ -361,7 +370,6 @@
                             <th>Min</th>
                             <th>Target Date</th>
                             <th>Resolved Date</th>
-                            <th>Age</th>
                             <th>Line</th>
                             <th>Machine</th>
                             <th>Problem</th>
@@ -406,15 +414,16 @@
                     <div style="border-top:1px solid var(--border); margin:1.5rem 0; padding-top:1.5rem;">
                         <h3 style="margin-bottom:1.5rem;">Email Summary</h3>
                         <div style="margin-bottom:1rem;">
-                            <label>Send Time</label>
-                            <input type="time" id="alert-send-time" value="07:30">
+                            <label>Email Recipients - LOP 1</label>
+                            <textarea id="alert-recipients-lop1" rows="4" placeholder="name1@company.com&#10;name2@company.com"></textarea>
                         </div>
                         <div style="margin-bottom:1rem;">
-                            <label>Email Recipients</label>
-                            <textarea id="alert-recipients" rows="5" placeholder="name1@company.com&#10;name2@company.com"></textarea>
+                            <label>Email Recipients - LOP 2</label>
+                            <textarea id="alert-recipients-lop2" rows="4" placeholder="name1@company.com&#10;name2@company.com"></textarea>
                         </div>
                         <button class="btn-submit btn-small" onclick="saveAlertSettings()">SAVE EMAIL LIST</button>
-                        <button class="btn-export" style="width:100%; margin-top:0.75rem;" onclick="prepareDashboardSummaryEmail()">SEND DASHBOARD EMAIL</button>
+                        <button class="btn-export" style="width:100%; margin-top:0.75rem;" onclick="prepareDashboardSummaryEmail('lop1')">SEND EMAIL TO LOP 1</button>
+                        <button class="btn-export" style="width:100%; margin-top:0.75rem;" onclick="prepareDashboardSummaryEmail('lop2')">SEND EMAIL TO LOP 2</button>
                     </div>
                 </div>
                 <div class="card">
@@ -442,9 +451,9 @@
                 <input type="hidden" id="edit_id">
                 <div class="form-row">
                     <div><label>Date</label><input type="date" id="edit_date"></div>
-                    <div><label>Start Time</label><input type="time" id="edit_start" onchange="autoCalcEditTime()"></div>
-                    <div><label>End Time</label><input type="time" id="edit_end" onchange="autoCalcEditTime()"></div>
-                    <div><label>Minutes</label><input type="number" id="edit_min" readonly></div>
+                    <div id="edit-start-time-field"><label>Start Time</label><input type="time" id="edit_start" onchange="autoCalcEditTime()"></div>
+                    <div id="edit-end-time-field"><label>End Time</label><input type="time" id="edit_end" onchange="autoCalcEditTime()"></div>
+                    <div id="edit-minutes-field"><label>Minutes</label><input type="number" id="edit_min" readonly></div>
                 </div>
                 <div class="form-row issue-only-fields" id="edit-issue-fields">
                     <div><label>Priority</label><select id="edit_priority"><option value="">-- Select Priority --</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></div>
@@ -507,13 +516,17 @@
         
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        let charts = {}, rawData = [], currentFilteredData = [], currentUser = null, productionSettings = [], alertSettings = { recipients: ["thithamm@deltaww.com"], sendTime: "07:30" };
+        let charts = {}, rawData = [], currentFilteredData = [], currentUser = null, productionSettings = [], alertSettings = { lop1Recipients: ["thithamm@deltaww.com"], lop2Recipients: [] };
         let editingPhotoUrls = { before: [], after: [] };
         const MAX_PHOTOS_PER_SECTION = 2;
         const departmentOptions = ['IE', 'QC/QA', 'Production', 'SMT', 'B/I', 'TE', 'AE', 'ME', 'Other'];
         let historyPage = 1;
         let historyPageSize = 10;
         let lastHistoryFilterSignature = '';
+        let issuePage = 1;
+        let issuePageSize = 10;
+        let lastDashboardFilterSignature = '';
+        let productionCleanupInProgress = false;
 
         function applyTheme(theme) {
             const selected = theme === 'dark' ? 'dark' : 'light';
@@ -527,6 +540,21 @@
             localStorage.setItem('downtime-theme', next);
             applyTheme(next);
         };
+
+        const headerClockFormatter = new Intl.DateTimeFormat('en-GB', {
+            weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        });
+        function updateHeaderClock() {
+            const clock = document.getElementById('header-clock');
+            if (clock) {
+                const now = new Date();
+                clock.dateTime = now.toISOString();
+                clock.textContent = headerClockFormatter.format(now);
+            }
+        }
+        updateHeaderClock();
+        setInterval(updateHeaderClock, 1000);
 
         function showToast(message, type = 'info', duration = 3500) {
             const area = document.getElementById('toast-area');
@@ -572,10 +600,23 @@
         const isAdmin = () => currentUser === 'Admin';
         const settingsCollection = () => collection(db, 'productionSettings');
         const alertSettingsDoc = () => doc(db, 'alertSettings', 'dailySummary');
+        const normalizeMachineName = name => String(name || '').trim().replace(/\s+/g, ' ');
+        const mergeDuplicateMachines = machines => {
+            const seen = new Set();
+            return (Array.isArray(machines) ? machines : []).reduce((merged, machine) => {
+                const normalized = normalizeMachineName(machine);
+                const key = normalized.toLocaleLowerCase();
+                if (normalized && !seen.has(key)) {
+                    seen.add(key);
+                    merged.push(normalized);
+                }
+                return merged;
+            }, []);
+        };
         const activeMachineData = () => {
             if (!productionSettings.length) return machineData;
             return productionSettings.reduce((map, item) => {
-                map[item.name] = Array.isArray(item.machines) ? item.machines : [];
+                map[item.name] = mergeDuplicateMachines(item.machines);
                 return map;
             }, {});
         };
@@ -599,6 +640,7 @@
             const storedType = record.record_type || record.log_type || record.case || 'Downtime';
             return storedType === 'Down Time' ? 'Downtime' : storedType;
         };
+        const getRecordDate = record => record.record_date || record.start_time?.split('T')[0] || '';
         window.setRecordTypeHighlight = select => {
             select.classList.remove('record-type-downtime', 'record-type-issue');
             if (select.value === 'Downtime') select.classList.add('record-type-downtime');
@@ -626,6 +668,7 @@
             ).join('');
             return `<select class="status-select ${statusClass(currentStatus)}" aria-label="Issue status" onchange="updateIssueStatus('${record.id}', this)">${options}</select>`;
         };
+        const solvedStatusBadge = () => '<span class="priority-badge status-solved">Solved</span>';
 
         function setSelectOptions(selectId, placeholderText, names) {
             const select = document.getElementById(selectId);
@@ -671,10 +714,44 @@
             try {
                 await seedDefaultSettingsIfNeeded();
                 onSnapshot(query(settingsCollection(), orderBy('name')), snap => {
-                    productionSettings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    const groups = new Map();
+                    snap.docs.forEach(snapshotDoc => {
+                        const data = snapshotDoc.data();
+                        const normalizedName = String(data.name || '').trim().replace(/\s+/g, ' ');
+                        const key = normalizedName.toLocaleLowerCase();
+                        if (!groups.has(key)) groups.set(key, []);
+                        groups.get(key).push({ id: snapshotDoc.id, ...data, name: normalizedName, originalName: data.name || '' });
+                    });
+
+                    const cleanupTasks = [];
+                    productionSettings = [...groups.values()].map(group => {
+                        const primary = group[0];
+                        const mergedMachines = mergeDuplicateMachines(group.flatMap(item => item.machines || []));
+                        const primaryNeedsUpdate = primary.name !== primary.originalName
+                            || JSON.stringify(primary.machines || []) !== JSON.stringify(mergedMachines);
+                        if (isAdmin() && !productionCleanupInProgress && (group.length > 1 || primaryNeedsUpdate)) {
+                            cleanupTasks.push((async () => {
+                                await updateDoc(doc(db, 'productionSettings', primary.id), {
+                                    name: primary.name,
+                                    machines: mergedMachines,
+                                    updatedAt: serverTimestamp()
+                                });
+                                await Promise.all(group.slice(1).map(item => deleteDoc(doc(db, 'productionSettings', item.id))));
+                            })());
+                        }
+                        const { originalName, ...displayPrimary } = primary;
+                        return { ...displayPrimary, machines: mergedMachines };
+                    }).sort((a, b) => a.name.localeCompare(b.name));
                     renderProductionOptions();
                     renderSettingsPage();
                     runFilter();
+                    if (cleanupTasks.length) {
+                        productionCleanupInProgress = true;
+                        Promise.all(cleanupTasks)
+                            .then(() => showToast(`Merged duplicate production and machine names in ${cleanupTasks.length} line(s).`))
+                            .catch(error => showToast(`Could not merge duplicate settings: ${error.message}`, 'error'))
+                            .finally(() => { productionCleanupInProgress = false; });
+                    }
                 });
             } catch (e) {
                 alert("Settings load error: " + e.message);
@@ -745,8 +822,9 @@
                 if (snap.exists()) {
                     const data = snap.data();
                     alertSettings = {
-                        recipients: Array.isArray(data.recipients) ? data.recipients : [],
-                        sendTime: data.sendTime || "07:30"
+                        // Keep compatibility with the original single recipient list.
+                        lop1Recipients: Array.isArray(data.lop1Recipients) ? data.lop1Recipients : (Array.isArray(data.recipients) ? data.recipients : []),
+                        lop2Recipients: Array.isArray(data.lop2Recipients) ? data.lop2Recipients : []
                     };
                 }
                 renderAlertSettingsPage();
@@ -754,21 +832,21 @@
         }
 
         function renderAlertSettingsPage() {
-            const recipientsEl = document.getElementById('alert-recipients');
-            const sendTimeEl = document.getElementById('alert-send-time');
-            if (!recipientsEl || !sendTimeEl) return;
+            const lop1RecipientsEl = document.getElementById('alert-recipients-lop1');
+            const lop2RecipientsEl = document.getElementById('alert-recipients-lop2');
+            if (!lop1RecipientsEl || !lop2RecipientsEl) return;
 
-            recipientsEl.value = alertSettings.recipients.join('\n');
-            sendTimeEl.value = alertSettings.sendTime || "07:30";
-            recipientsEl.disabled = !isAdmin();
-            sendTimeEl.disabled = !isAdmin();
+            lop1RecipientsEl.value = (alertSettings.lop1Recipients || []).join('\n');
+            lop2RecipientsEl.value = (alertSettings.lop2Recipients || []).join('\n');
+            lop1RecipientsEl.disabled = !isAdmin();
+            lop2RecipientsEl.disabled = !isAdmin();
         }
 
         window.addProduction = async () => {
             if (!isAdmin()) return alert("Admin user only can add production settings.");
 
             const input = document.getElementById('new-production-name');
-            const name = input.value.trim();
+            const name = String(input.value || '').trim().replace(/\s+/g, ' ');
             if (!name) return alert("Please enter production name.");
 
             const exists = productionSettings.some(item => item.name.toLowerCase() === name.toLowerCase());
@@ -804,12 +882,12 @@
             if (!isAdmin()) return alert("Admin user only can edit machine settings.");
 
             const input = document.getElementById(`machine-input-${productionId}`);
-            const machineName = input.value.trim();
+            const machineName = normalizeMachineName(input.value);
             if (!machineName) return alert("Please enter machine name.");
 
             const production = productionSettings.find(item => item.id === productionId);
-            const machines = Array.isArray(production?.machines) ? production.machines : [];
-            const exists = machines.some(machine => machine.toLowerCase() === machineName.toLowerCase());
+            const machines = mergeDuplicateMachines(production?.machines);
+            const exists = machines.some(machine => machine.toLocaleLowerCase() === machineName.toLocaleLowerCase());
             if (exists) return alert("This machine name already exists in this production.");
 
             try {
@@ -885,7 +963,7 @@
                 .map(([line, min], index) => `${index + 1}. ${line}: ${min} min`);
             const trendMap = {};
             data.forEach(d => {
-                const day = d.start_time?.split('T')[0];
+                const day = getRecordDate(d);
                 if (day) trendMap[day] = (trendMap[day] || 0) + (parseInt(d.manual_min) || 0);
             });
             const trendLines = Object.entries(trendMap)
@@ -986,6 +1064,13 @@
         const fTimeS = pageId==='page-history' ? document.getElementById('f-time-start').value : "";
         const fTimeE = pageId==='page-history' ? document.getElementById('f-time-end').value : "";
         const fM = pageId==='page-history' ? document.getElementById('f-machine').value.toLowerCase() : "";
+        if (pageId === 'page-dashboard') {
+            const filterSignature = JSON.stringify([fRecordType, fS, fE, fL, fD]);
+            if (filterSignature !== lastDashboardFilterSignature) {
+                issuePage = 1;
+                lastDashboardFilterSignature = filterSignature;
+            }
+        }
         if (pageId === 'page-history') {
             const filterSignature = JSON.stringify([fRecordType, fS, fE, fL, fD, fTimeS, fTimeE, fM]);
             if (filterSignature !== lastHistoryFilterSignature) {
@@ -998,8 +1083,8 @@
         const filterEndFull = (fE && fTimeE) ? `${fE}T${fTimeE}` : (fE ? `${fE}T23:59` : null);
 
         const filtered = rawData.filter(d => {
-        const itemFullTime = d.start_time; // ข้อมูลใน DB เป็น "YYYY-MM-DDTHH:mm" อยู่แล้ว
-        const dt = d.start_time?.split('T')[0];
+        const dt = getRecordDate(d);
+        const itemFullTime = d.start_time || (dt ? `${dt}T00:00` : '');
         
         const matchLine = (!fL || d.line === fL);
         const matchDept = (!fD || d.reason === fD);
@@ -1048,14 +1133,13 @@
                 if (rootCause) rootCauseMap[rootCause] = (rootCauseMap[rootCause] || 0) + min;
                 if (getRecordType(d) === 'Issue Log') statusMap[normalizeStatus(d.status)] += 1;
 
-                const day = d.start_time?.split('T')[0];
+                const day = getRecordDate(d);
                 if(day) trendMap[day] = (trendMap[day]||0) + min;
 
                 if (tbody && dataIndex >= historyStartIndex && dataIndex < historyEndIndex) {
                     const row = document.createElement('tr');
                     const startTime = d.start_time ? formatTime24Hour(d.start_time.split('T')[1]) : "-";
                     const endTime = d.end_time ? formatTime24Hour(d.end_time.split('T')[1]) : "-";
-                    const recordAge = dateDifferenceDays(day, d.resolved_date || getLocalDateValue());
                     row.innerHTML = `
                         <td>${recordTypeBadge(d)}</td>
                         <td>${getRecordType(d) === 'Issue Log' ? `<span class="priority-badge ${priorityClass(d.priority)}">${escapeHtml(d.priority || 'Low')}</span>` : '-'}</td>
@@ -1063,7 +1147,7 @@
                         <td style="color:var(--primary); font-weight:600">${startTime}</td>
                         <td style="color:var(--purple); font-weight:600">${endTime}</td>
                         <td style="color:var(--danger); font-weight:800">${min}</td>
-                        <td>${escapeHtml(d.target_date || '-')}</td><td>${escapeHtml(d.resolved_date || '-')}</td><td>${recordAge === null ? '-' : `${recordAge} days`}</td>
+                        <td>${escapeHtml(d.target_date || '-')}</td><td>${escapeHtml(d.resolved_date || '-')}</td>
                         <td><b>${d.line}</b></td><td>${d.machine}</td>
                         <td><small>${d.problem}</small></td><td><small>${d.root_cause}</small></td>
                         <td><small>${d.action_short_term ?? d.action ?? ''}</small></td>
@@ -1071,7 +1155,7 @@
                         <td>${d.reason}</td><td><small>${d.tech_name}</small></td>
                         <td>${photoCell(getPhotoUrls(d, 'before'), 'Before')}</td>
                         <td>${photoCell(getPhotoUrls(d, 'after'), 'After')}</td>
-                        <td>${getRecordType(d) === 'Issue Log' ? statusSelect(d) : '-'}</td>
+                        <td>${getRecordType(d) === 'Issue Log' ? statusSelect(d) : solvedStatusBadge()}</td>
                         <td>
                             <div style="display:flex; gap:8px;">
                                 <button onclick="openEdit('${d.id}')" style="color:var(--primary); cursor:pointer; background:none; border:none; font-weight:bold;">แก้ไข</button>
@@ -1164,7 +1248,7 @@
             const solvedIssues = issueData.filter(item => normalizeStatus(item.status) === 'Solved');
             const overdueIssues = openIssues.filter(item => item.target_date && item.target_date < today);
             const resolutionDays = solvedIssues
-                .map(item => dateDifferenceDays(item.start_time?.split('T')[0], item.resolved_date))
+                .map(item => dateDifferenceDays(getRecordDate(item), item.resolved_date))
                 .filter(days => days !== null);
 
             document.getElementById('issue-total').textContent = issueData.length.toLocaleString();
@@ -1178,7 +1262,7 @@
 
             const trendCounts = {}, lineCounts = {}, machineCounts = {}, problemCounts = {}, rootCauseCounts = {}, ownerCounts = {};
             issueData.forEach(item => {
-                const date = item.start_time?.split('T')[0];
+                const date = getRecordDate(item);
                 const problem = (item.problem || 'Unspecified').trim();
                 const rootCause = (item.root_cause || 'Unspecified').trim();
                 if (date) trendCounts[date] = (trendCounts[date] || 0) + 1;
@@ -1204,9 +1288,12 @@
                 const aOverdue = a.target_date && a.target_date < today ? 1 : 0;
                 const bOverdue = b.target_date && b.target_date < today ? 1 : 0;
                 return bOverdue - aOverdue || (priorityRank[b.priority] || 0) - (priorityRank[a.priority] || 0) || String(a.target_date || '9999').localeCompare(String(b.target_date || '9999'));
-            }).slice(0, 10);
-            list.innerHTML = sortedOpenIssues.length ? sortedOpenIssues.map(item => {
-                const createdDate = item.start_time?.split('T')[0] || '';
+            });
+            const totalIssuePages = Math.max(1, Math.ceil(sortedOpenIssues.length / issuePageSize));
+            issuePage = Math.min(Math.max(1, issuePage), totalIssuePages);
+            const pagedOpenIssues = sortedOpenIssues.slice((issuePage - 1) * issuePageSize, issuePage * issuePageSize);
+            list.innerHTML = pagedOpenIssues.length ? pagedOpenIssues.map(item => {
+                const createdDate = getRecordDate(item);
                 const age = dateDifferenceDays(createdDate, today);
                 const isOverdue = item.target_date && item.target_date < today;
                 return `<tr>
@@ -1214,12 +1301,47 @@
                     <td><span class="priority-badge ${priorityClass(item.priority)}">${escapeHtml(item.priority || 'Low')}</span></td>
                     <td>${escapeHtml(item.line || '-')}</td><td>${escapeHtml(item.machine || '-')}</td>
                     <td>${escapeHtml(item.problem || '-')}</td><td>${escapeHtml(item.reason || '-')}</td>
-                    <td>${escapeHtml(item.tech_name || 'Unassigned')}</td><td>${escapeHtml(normalizeStatus(item.status))}</td>
-                    <td>${escapeHtml(item.target_date || '-')} ${isOverdue ? '<span class="overdue-badge">Overdue</span>' : ''}</td>
+                    <td>${escapeHtml(item.tech_name || 'Unassigned')}</td>
+                    <td>${isOverdue
+                        ? '<span class="overdue-badge">Overdue</span>'
+                        : `<span class="priority-badge ${statusClass(item.status)}">${escapeHtml(normalizeStatus(item.status))}</span>`}</td>
+                    <td>${escapeHtml(item.target_date || '-')}</td>
                     <td>${age === null ? '-' : `${age} days`}</td>
                 </tr>`;
             }).join('') : '<tr><td colspan="10"><div class="empty-state">No open issues for the selected filter.</div></td></tr>';
+            renderIssuePagination(sortedOpenIssues.length, totalIssuePages);
         }
+
+        function renderIssuePagination(totalRecords, totalPages) {
+            const info = document.getElementById('issue-page-info');
+            const pagination = document.getElementById('issue-pagination');
+            if (!info || !pagination) return;
+            const firstRecord = totalRecords ? ((issuePage - 1) * issuePageSize) + 1 : 0;
+            const lastRecord = Math.min(issuePage * issuePageSize, totalRecords);
+            info.textContent = `Showing ${firstRecord}-${lastRecord} of ${totalRecords}`;
+            const visiblePages = new Set([1, totalPages]);
+            for (let page = Math.max(1, issuePage - 2); page <= Math.min(totalPages, issuePage + 2); page++) visiblePages.add(page);
+            const sortedPages = [...visiblePages].sort((a, b) => a - b);
+            let previousPage = 0;
+            const buttons = sortedPages.map(page => {
+                const ellipsis = previousPage && page - previousPage > 1 ? '<span class="page-ellipsis">&hellip;</span>' : '';
+                previousPage = page;
+                return `${ellipsis}<button class="page-button${page === issuePage ? ' active' : ''}" onclick="goToIssuePage(${page})" aria-label="Page ${page}"${page === issuePage ? ' aria-current="page"' : ''}>${page}</button>`;
+            }).join('');
+            pagination.innerHTML = `<button class="page-button" onclick="goToIssuePage(${issuePage - 1})" ${issuePage === 1 ? 'disabled' : ''} aria-label="Previous page">&lsaquo;</button>${buttons}<button class="page-button" onclick="goToIssuePage(${issuePage + 1})" ${issuePage === totalPages ? 'disabled' : ''} aria-label="Next page">&rsaquo;</button>`;
+        }
+
+        window.goToIssuePage = page => {
+            issuePage = Math.max(1, Number(page) || 1);
+            updateUI(currentFilteredData);
+            document.querySelector('#issue-open-list')?.closest('.table-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        window.changeIssuePageSize = value => {
+            issuePageSize = Number(value) === 20 ? 20 : 10;
+            issuePage = 1;
+            updateUI(currentFilteredData);
+        };
 
         function renderIssueCountChart(canvasId, valueMap, type, color) {
             if (charts[canvasId]) charts[canvasId].destroy();
@@ -1326,6 +1448,16 @@
             document.getElementById('issue-record-fields').style.display = isIssue ? 'grid' : 'none';
             document.getElementById('priority').required = isIssue;
             document.getElementById('target_date').required = isIssue;
+            ['record-start-time-field', 'record-end-time-field', 'record-minutes-field'].forEach(id => {
+                document.getElementById(id).style.display = isIssue ? 'none' : '';
+            });
+            document.getElementById('start_time_only').required = hasRecordType && !isIssue;
+            document.getElementById('end_time_only').required = hasRecordType && !isIssue;
+            if (isIssue) {
+                document.getElementById('start_time_only').value = '';
+                document.getElementById('end_time_only').value = '';
+                document.getElementById('manual_min').value = '0';
+            }
             if (!isIssue) {
                 document.getElementById('priority').value = '';
                 document.getElementById('target_date').value = '';
@@ -1420,25 +1552,25 @@
 
         window.saveAlertSettings = async () => {
             if (!isAdmin()) return alert("Only Admin can edit email alert settings.");
-            const recipients = document.getElementById('alert-recipients').value
-                .split(/[\n,;]+/)
-                .map(email => email.trim())
-                .filter(Boolean);
-            const sendTime = document.getElementById('alert-send-time').value || "07:30";
-
+            const parseRecipients = id => document.getElementById(id).value
+                .split(/[\n,;]+/).map(email => email.trim()).filter(Boolean);
+            const lop1Recipients = parseRecipients('alert-recipients-lop1');
+            const lop2Recipients = parseRecipients('alert-recipients-lop2');
             await setDoc(alertSettingsDoc(), {
-                recipients,
-                sendTime,
+                lop1Recipients,
+                lop2Recipients,
                 updatedAt: serverTimestamp()
             }, { merge: true });
             alert("Email alert settings saved successfully.");
         };
 
-        window.prepareDashboardSummaryEmail = () => {
-            const recipients = alertSettings.recipients || [];
-            if (!recipients.length) return alert("Please enter at least one email recipient.");
+        window.prepareDashboardSummaryEmail = (lop = 'lop1') => {
+            const isLop2 = lop === 'lop2';
+            const lopLabel = isLop2 ? 'LOP 2' : 'LOP 1';
+            const recipients = isLop2 ? (alertSettings.lop2Recipients || []) : (alertSettings.lop1Recipients || []);
+            if (!recipients.length) return alert(`Please enter at least one email recipient for ${lopLabel}.`);
 
-            const subject = `Dashboard Downtime Summary - ${getLocalDateValue()}`;
+            const subject = `${lopLabel} Dashboard Downtime Summary - ${getLocalDateValue()}`;
             const body = buildDashboardSummary(currentFilteredData, subject);
             const recipientList = recipients.map(email => encodeURIComponent(email)).join(',');
             const mailto = `mailto:${recipientList}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -1469,14 +1601,18 @@
             const requiredFields = [
                 { element: document.getElementById('record_type'), value: recordType, label: 'Record Type' },
                 { element: document.getElementById('record_date'), value: rDate, label: 'Date' },
-                { element: document.getElementById('start_time_only'), value: startTime, label: 'Start Time' },
-                { element: document.getElementById('end_time_only'), value: endTime, label: 'End Time' },
                 { element: document.getElementById('line'), value: line, label: 'Line' },
                 { element: document.getElementById('machine'), value: machine, label: 'Machine' },
                 { element: document.getElementById('reason'), value: reason, label: 'Dept' },
                 { element: document.getElementById('owner1'), value: owner1, label: 'Owner 1' },
                 { element: document.getElementById('problem'), value: problem.trim(), label: 'Problem' }
             ];
+            if (recordType !== 'Issue Log') {
+                requiredFields.push(
+                    { element: document.getElementById('start_time_only'), value: startTime, label: 'Start Time' },
+                    { element: document.getElementById('end_time_only'), value: endTime, label: 'End Time' }
+                );
+            }
             const missingFields = requiredFields.filter(field => !field.value);
             if (recordType === 'Issue Log') {
                 if (!priority) missingFields.push({ element: document.getElementById('priority'), label: 'Priority' });
@@ -1487,7 +1623,7 @@
                 missingFields[0].element.focus();
                 return;
             }
-            if (!validate24HourInput(document.getElementById('start_time_only')) || !validate24HourInput(document.getElementById('end_time_only'))) return;
+            if (recordType !== 'Issue Log' && (!validate24HourInput(document.getElementById('start_time_only')) || !validate24HourInput(document.getElementById('end_time_only')))) return;
             if (beforeFiles.length > MAX_PHOTOS_PER_SECTION || afterFiles.length > MAX_PHOTOS_PER_SECTION) return alert("Please select no more than 2 pictures in each section.");
 
             try {
@@ -1508,10 +1644,13 @@
                     reason, problem, root_cause: root,
                     action_short_term: actionShortTerm,
                     action_long_term: actionLongTerm,
-                    status: 'Follow up',
-                    start_time: `${rDate}T${startTime}`,
-                    end_time: `${rDate}T${endTime}`,
-                    manual_min: parseInt(min),
+                    status: recordType === 'Issue Log' ? 'Follow up' : 'Solved',
+                    record_date: rDate,
+                    ...(recordType === 'Issue Log' ? { manual_min: 0 } : {
+                        start_time: `${rDate}T${startTime}`,
+                        end_time: `${rDate}T${endTime}`,
+                        manual_min: parseInt(min)
+                    }),
                     before_photo_urls: beforeUrls,
                     after_photo_urls: afterUrls,
                     createdAt: serverTimestamp()
@@ -1654,12 +1793,12 @@
 
                 for (const d of currentFilteredData) {
                     const row = sheet.addRow({
-                        date: d.start_time?.split('T')[0] || '',
+                        date: getRecordDate(d),
                         recordType: getRecordType(d),
                         priority: getRecordType(d) === 'Issue Log' ? (d.priority || 'Low') : '',
                         targetDate: d.target_date || '',
                         resolvedDate: d.resolved_date || '',
-                        ageDays: dateDifferenceDays(d.start_time?.split('T')[0], d.resolved_date || getLocalDateValue()) ?? '',
+                        ageDays: dateDifferenceDays(getRecordDate(d), d.resolved_date || getLocalDateValue()) ?? '',
                         start: d.start_time ? formatTime24Hour(d.start_time.split('T')[1]) : '',
                         end: d.end_time ? formatTime24Hour(d.end_time.split('T')[1]) : '',
                         line: d.line || '',
@@ -1671,7 +1810,7 @@
                         minutes: parseInt(d.manual_min) || 0,
                         department: d.reason || '',
                         owner: d.tech_name || '',
-                        status: getRecordType(d) === 'Issue Log' ? normalizeStatus(d.status) : '',
+                        status: getRecordType(d) === 'Issue Log' ? normalizeStatus(d.status) : 'Solved',
                         before: getPhotoUrls(d, 'before').length ? `${getPhotoUrls(d, 'before').length} picture(s)` : 'No picture',
                         after: getPhotoUrls(d, 'after').length ? `${getPhotoUrls(d, 'after').length} picture(s)` : 'No picture'
                     });
@@ -1735,10 +1874,13 @@
             const isIssue = getRecordType(d) === 'Issue Log';
             document.getElementById('edit_id').value = id;
             document.getElementById('edit-modal-title').textContent = `Edit ${getRecordType(d)} Record`;
-            document.getElementById('edit_date').value = d.start_time.split('T')[0];
-            document.getElementById('edit_start').value = d.start_time.split('T')[1];
-            document.getElementById('edit_end').value = d.end_time.split('T')[1];
-            document.getElementById('edit_min').value = d.manual_min;
+            document.getElementById('edit_date').value = getRecordDate(d);
+            document.getElementById('edit_start').value = isIssue ? '' : (d.start_time?.split('T')[1] || '');
+            document.getElementById('edit_end').value = isIssue ? '' : (d.end_time?.split('T')[1] || '');
+            document.getElementById('edit_min').value = isIssue ? 0 : (d.manual_min || 0);
+            ['edit-start-time-field', 'edit-end-time-field', 'edit-minutes-field'].forEach(fieldId => {
+                document.getElementById(fieldId).style.display = isIssue ? 'none' : '';
+            });
             document.getElementById('edit_reason').value = d.reason;
             document.getElementById('edit_problem').value = d.problem;
             document.getElementById('edit_root').value = d.root_cause;
@@ -1953,9 +2095,12 @@
                     uploadRecordPhotos(id, 'after', afterFiles)
                 ]);
                 const changes = {
-                    start_time: `${date}T${start}`,
-                    end_time: `${date}T${end}`,
-                    manual_min: parseInt(min),
+                    record_date: date,
+                    ...(editingIssue ? {} : {
+                        start_time: `${date}T${start}`,
+                        end_time: `${date}T${end}`,
+                        manual_min: parseInt(min)
+                    }),
                     reason: document.getElementById('edit_reason').value,
                     problem: document.getElementById('edit_problem').value,
                     root_cause: document.getElementById('edit_root').value,
